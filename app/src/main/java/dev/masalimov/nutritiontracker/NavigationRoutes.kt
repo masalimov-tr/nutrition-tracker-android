@@ -1,4 +1,4 @@
-package dev.masalimov.nutritiontracker.core.navigation
+package dev.masalimov.nutritiontracker
 
 import kotlinx.serialization.Serializable
 

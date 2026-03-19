@@ -17,23 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
-import dev.masalimov.nutritiontracker.core.navigation.NavigationRoutes
-
-fun NavGraphBuilder.foodListScreen(
-    onItemClick: (Long) -> Unit = {},
-) {
-    composable<NavigationRoutes.FoodList> {
-        val foodViewModel: FoodViewModel = viewModel<FoodViewModel>()
-        FoodListScreen(
-            modifier = Modifier.fillMaxSize(),
-            viewModel = foodViewModel,
-            onItemClick = onItemClick,
-        )
-    }
-}
 
 @Composable
 fun FoodListScreen(

@@ -4,24 +4,21 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import dev.masalimov.nutritiontracker.core.navigation.NavigationRoutes
 import dev.masalimov.nutritiontracker.feature.food.details.FoodDetailScreen
 import dev.masalimov.nutritiontracker.feature.food.details.FoodDetailsViewModel
-import dev.masalimov.nutritiontracker.feature.food.details.foodDetailsScreen
-import dev.masalimov.nutritiontracker.feature.food.details.navigateToFoodDetail
 import dev.masalimov.nutritiontracker.feature.food.list.FoodListScreen
 import dev.masalimov.nutritiontracker.feature.food.list.FoodViewModel
-import dev.masalimov.nutritiontracker.feature.food.list.foodListScreen
 import dev.masalimov.nutritiontracker.ui.theme.NutritionTrackerTheme
 
 class MainActivity : ComponentActivity() {
@@ -47,5 +44,33 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+}
+
+fun NavGraphBuilder.foodListScreen(
+    onItemClick: (Long) -> Unit = {},
+) {
+    composable<NavigationRoutes.FoodList> {
+        val foodViewModel: FoodViewModel = viewModel<FoodViewModel>()
+        FoodListScreen(
+            modifier = Modifier.fillMaxSize(),
+            viewModel = foodViewModel,
+            onItemClick = onItemClick,
+        )
+    }
+}
+
+fun NavController.navigateToFoodDetail(foodId: Long) {
+    navigate(NavigationRoutes.FoodDetail(foodId))
+}
+
+fun NavGraphBuilder.foodDetailsScreen() {
+    composable<NavigationRoutes.FoodDetail> { backStackEntry ->
+        val route = backStackEntry.toRoute<NavigationRoutes.FoodDetail>()
+        val foodId = route.foodId
+        val viewModel: FoodDetailsViewModel = viewModel(factory =
+            FoodDetailsViewModel.Factory(foodId)
+        )
+        FoodDetailScreen(viewModel)
     }
 }

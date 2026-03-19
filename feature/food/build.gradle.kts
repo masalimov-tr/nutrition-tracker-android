@@ -38,7 +38,6 @@ android {
 
 dependencies {
     implementation(project(":data:food"))
-    implementation(project(":core:navigation"))
     // Kotlin + coroutines + lifecycle
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.kotlinx.coroutines.android)

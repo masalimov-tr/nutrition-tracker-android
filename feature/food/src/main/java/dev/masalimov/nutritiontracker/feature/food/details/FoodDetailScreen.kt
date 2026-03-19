@@ -10,28 +10,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
-import dev.masalimov.nutritiontracker.core.navigation.NavigationRoutes
 import dev.masalimov.nutritiontracker.feature.food.list.FoodUiModel
 
-fun NavController.navigateToFoodDetail(foodId: Long) {
-    navigate(NavigationRoutes.FoodDetail(foodId))
-}
-
-fun NavGraphBuilder.foodDetailsScreen() {
-    composable<NavigationRoutes.FoodDetail> { backStackEntry ->
-        val route = backStackEntry.toRoute<NavigationRoutes.FoodDetail>()
-        val foodId = route.foodId
-        val viewModel: FoodDetailsViewModel = viewModel(factory =
-            FoodDetailsViewModel.Factory(foodId)
-        )
-        FoodDetailScreen(viewModel)
-    }
-}
 @Composable
 fun FoodDetailScreen(
     viewModel: FoodDetailsViewModel,
