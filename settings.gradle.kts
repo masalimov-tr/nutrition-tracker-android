@@ -21,3 +21,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "Nutrition Tracker"
 include(":app")
+include(":core:common")
+include(":data:food")
+include(":feature:food")
