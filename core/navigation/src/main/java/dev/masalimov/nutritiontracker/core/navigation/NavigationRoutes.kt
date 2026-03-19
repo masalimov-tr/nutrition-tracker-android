@@ -1,8 +1,8 @@
-package dev.masalimov.nutritiontracker
+package dev.masalimov.nutritiontracker.core.navigation
 
 import kotlinx.serialization.Serializable
 
-
+@Serializable
 sealed class NavigationRoutes {
 
     @Serializable

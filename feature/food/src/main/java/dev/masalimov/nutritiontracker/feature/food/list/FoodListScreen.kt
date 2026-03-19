@@ -17,13 +17,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
+import dev.masalimov.nutritiontracker.core.navigation.NavigationRoutes
 
+fun NavGraphBuilder.foodListScreen(
+    onItemClick: (Long) -> Unit = {},
+) {
+    composable<NavigationRoutes.FoodList> {
+        val foodViewModel: FoodViewModel = viewModel<FoodViewModel>()
+        FoodListScreen(
+            modifier = Modifier.fillMaxSize(),
+            viewModel = foodViewModel,
+            onItemClick = onItemClick,
+        )
+    }
+}
 
 @Composable
 fun FoodListScreen(
     modifier: Modifier = Modifier,
     viewModel: FoodViewModel,
-    onItemClick: (FoodUiModel) -> Unit = {},
+    onItemClick: (Long) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     FoodListContent(modifier, uiState, onItemClick)
@@ -33,7 +49,7 @@ fun FoodListScreen(
 private fun FoodListContent(
     modifier: Modifier = Modifier,
     items: List<FoodUiModel>,
-    onItemClick: (FoodUiModel) -> Unit = {},
+    onItemClick: (Long) -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -44,7 +60,7 @@ private fun FoodListContent(
             item(key = item.name) {
                 FoodListItem(
                     item = item,
-                    onClick = { onItemClick(item) },
+                    onClick = { onItemClick(item.id) },
                     modifier = Modifier
                 )
             }
