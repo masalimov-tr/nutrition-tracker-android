@@ -86,4 +86,7 @@ internal class FakeFoodRepository : FoodRepository {
     )
 
     override suspend fun getAllFood(): List<Food> = listOfFoods
+    override suspend fun getFoodById(foodId: Long): Food {
+        return listOfFoods.first { it.id == foodId }
+    }
 }
