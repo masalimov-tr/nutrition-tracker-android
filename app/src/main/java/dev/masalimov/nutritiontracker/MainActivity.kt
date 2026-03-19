@@ -15,8 +15,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import dev.masalimov.nutritiontracker.feature.food.details.FoodDetailRoute
 import dev.masalimov.nutritiontracker.feature.food.details.FoodDetailScreen
 import dev.masalimov.nutritiontracker.feature.food.details.FoodDetailsViewModel
+import dev.masalimov.nutritiontracker.feature.food.list.FoodListRoute
 import dev.masalimov.nutritiontracker.feature.food.list.FoodListScreen
 import dev.masalimov.nutritiontracker.feature.food.list.FoodViewModel
 import dev.masalimov.nutritiontracker.ui.theme.NutritionTrackerTheme
@@ -32,7 +34,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = NavigationRoutes.FoodList,
+                        startDestination = FoodListRoute,
                         modifier = Modifier
                             .fillMaxSize()
                             .then(Modifier.padding(innerPadding))
@@ -51,7 +53,7 @@ class MainActivity : ComponentActivity() {
 fun NavGraphBuilder.foodListScreen(
     onItemClick: (Long) -> Unit = {},
 ) {
-    composable<NavigationRoutes.FoodList> {
+    composable<FoodListRoute> {
         val foodViewModel: FoodViewModel = hiltViewModel()
         FoodListScreen(
             modifier = Modifier.fillMaxSize(),
@@ -62,11 +64,11 @@ fun NavGraphBuilder.foodListScreen(
 }
 
 fun NavController.navigateToFoodDetail(foodId: Long) {
-    navigate(NavigationRoutes.FoodDetail(foodId))
+    navigate(FoodDetailRoute(foodId))
 }
 
 fun NavGraphBuilder.foodDetailsScreen() {
-    composable<NavigationRoutes.FoodDetail> {
+    composable<FoodDetailRoute> {
         val viewModel: FoodDetailsViewModel = hiltViewModel()
         FoodDetailScreen(viewModel)
     }

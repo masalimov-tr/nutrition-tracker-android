@@ -11,6 +11,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.masalimov.nutritiontracker.feature.food.list.FoodUiModel
+import kotlinx.serialization.Serializable
+
+
+@Serializable
+data class FoodDetailRoute(val foodId: Long)
+
 
 @Composable
 fun FoodDetailScreen(

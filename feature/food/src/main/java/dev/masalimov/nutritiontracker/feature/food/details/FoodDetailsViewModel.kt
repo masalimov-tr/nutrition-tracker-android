@@ -3,6 +3,7 @@ package dev.masalimov.nutritiontracker.feature.food.details
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.masalimov.nutritiontracker.data.food.FoodRepository
 import dev.masalimov.nutritiontracker.feature.food.list.FoodUiModel
@@ -17,8 +18,7 @@ class FoodDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val foodRepository: FoodRepository,
 ) : ViewModel() {
-    private val foodId: Long =
-        savedStateHandle.get<Long>("foodId") ?: error("Missing navigation argument: foodId")
+    private val foodId: Long = savedStateHandle.toRoute<FoodDetailRoute>().foodId
 
     private val _uiState: MutableStateFlow<FoodUiModel?> = MutableStateFlow(null)
     val uiState: StateFlow<FoodUiModel?> = _uiState.asStateFlow()
