@@ -1,20 +1,24 @@
 package dev.masalimov.nutritiontracker.feature.food.details
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import dev.masalimov.nutritiontracker.data.food.DataModule
-import dev.masalimov.nutritiontracker.feature.food.FoodFeatureModule
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.masalimov.nutritiontracker.data.food.FoodRepository
 import dev.masalimov.nutritiontracker.feature.food.list.FoodUiModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class FoodDetailsViewModel(
-    foodId: Long,
+@HiltViewModel
+class FoodDetailsViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    private val foodRepository: FoodRepository,
 ) : ViewModel() {
-    val foodRepository = DataModule.getFoodRepository()
+    private val foodId: Long =
+        savedStateHandle.get<Long>("foodId") ?: error("Missing navigation argument: foodId")
 
     private val _uiState: MutableStateFlow<FoodUiModel?> = MutableStateFlow(null)
     val uiState: StateFlow<FoodUiModel?> = _uiState.asStateFlow()
@@ -27,16 +31,6 @@ class FoodDetailsViewModel(
                 name = food.name,
                 caloriesPer100g = food.caloriesPer100g
             )
-        }
-    }
-
-    companion object {
-        fun Factory(foodId: Long): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                @Suppress("UNCHECKED_CAST")
-                return FoodDetailsViewModel(foodId) as T
-            }
-
         }
     }
 }

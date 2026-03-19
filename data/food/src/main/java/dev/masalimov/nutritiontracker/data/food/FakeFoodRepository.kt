@@ -1,6 +1,8 @@
 package dev.masalimov.nutritiontracker.data.food
 
-internal class FakeFoodRepository : FoodRepository {
+import javax.inject.Inject
+
+class FakeFoodRepository @Inject constructor() : FoodRepository {
 
     private val listOfFoods = listOf(
         Food(
