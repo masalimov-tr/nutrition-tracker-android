@@ -1,10 +1,8 @@
 package dev.masalimov.nutritiontracker.feature.food.details
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.masalimov.nutritiontracker.data.food.FoodRepository
 import dev.masalimov.nutritiontracker.feature.food.list.FoodUiModel
@@ -12,17 +10,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-@HiltViewModel(assistedFactory = FoodDetailsViewModel.Factory::class)
-class FoodDetailsViewModel @AssistedInject constructor(
-    @Assisted private val foodId: Long,
+@HiltViewModel
+class FoodDetailsViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val foodRepository: FoodRepository,
 ) : ViewModel() {
-
-    @AssistedFactory
-    interface Factory {
-        fun create(foodId: Long): FoodDetailsViewModel
-    }
+    private val foodId: Long =
+        savedStateHandle.get<Long>("foodId") ?: error("Missing navigation argument: foodId")
 
     private val _uiState: MutableStateFlow<FoodUiModel?> = MutableStateFlow(null)
     val uiState: StateFlow<FoodUiModel?> = _uiState.asStateFlow()
