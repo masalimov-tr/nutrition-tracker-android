@@ -14,6 +14,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import dagger.hilt.android.AndroidEntryPoint
 import dev.masalimov.nutritiontracker.feature.food.details.FoodDetailScreen
 import dev.masalimov.nutritiontracker.feature.food.details.FoodDetailsViewModel
@@ -66,8 +67,13 @@ fun NavController.navigateToFoodDetail(foodId: Long) {
 }
 
 fun NavGraphBuilder.foodDetailsScreen() {
-    composable<NavigationRoutes.FoodDetail> {
-        val viewModel: FoodDetailsViewModel = hiltViewModel()
+    composable<NavigationRoutes.FoodDetail> { backStackEntry ->
+        val route = backStackEntry.toRoute<NavigationRoutes.FoodDetail>()
+        val viewModel = hiltViewModel<FoodDetailsViewModel, FoodDetailsViewModel.Factory>(
+            creationCallback = { factory ->
+                factory.create(route.foodId)
+            }
+        )
         FoodDetailScreen(viewModel)
     }
 }
