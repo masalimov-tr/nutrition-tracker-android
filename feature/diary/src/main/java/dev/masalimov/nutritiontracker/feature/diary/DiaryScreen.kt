@@ -1,17 +1,20 @@
 package dev.masalimov.nutritiontracker.feature.diary
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -58,7 +61,11 @@ fun DiaryScreen(
             }
 
             item(key = "calories_card") {
-                CaloriesCard(uiState.goalCaloriesPerDay)
+                val consumed = uiState.eatenFoodList.sumOf { it.caloriesEaten }
+                CaloriesCard(
+                    caloriesPerDay = uiState.goalCaloriesPerDay,
+                    consumedCalories = consumed
+                )
             }
 
             item(key = "eaten_food_section") {
@@ -111,6 +118,7 @@ private fun DateHeader(
 @Composable
 private fun CaloriesCard(
     caloriesPerDay: Int? = null,
+    consumedCalories: Int? = null,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -128,22 +136,65 @@ private fun CaloriesCard(
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
             )
-            if (caloriesPerDay != null) {
+            if (caloriesPerDay != null && caloriesPerDay > 0) {
+                val consumed = (consumedCalories ?: 0).coerceAtLeast(0)
+                val progress = (consumed.toFloat() / caloriesPerDay.toFloat()).coerceIn(0f, 1f)
                 Row(
-                    verticalAlignment = Alignment.Bottom,
-                    modifier = Modifier.padding(top = 8.dp)
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.padding(top = 12.dp)
                 ) {
-                    Text(
-                        text = caloriesPerDay.toString(),
-                        style = MaterialTheme.typography.displaySmall,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Text(
-                        text = " kcal",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
-                        modifier = Modifier.padding(start = 6.dp, bottom = 4.dp)
-                    )
+                    Box(modifier = Modifier.size(72.dp)) {
+                        // Track
+                        CircularProgressIndicator(
+                            progress = { 1f },
+                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.15f),
+                            strokeWidth = 8.dp,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                        // Progress
+                        CircularProgressIndicator(
+                            progress = { progress },
+                            color = MaterialTheme.colorScheme.primary,
+                            strokeWidth = 8.dp,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                        // Center label
+                        Column(
+                            modifier = Modifier.matchParentSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "${(progress * 100).toInt()}%",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+                    }
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.Bottom) {
+                            Text(
+                                text = consumed.toString(),
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Text(
+                                text = " / ${caloriesPerDay} kcal",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
+                                modifier = Modifier.padding(start = 6.dp, bottom = 2.dp)
+                            )
+                        }
+                        val remaining = (caloriesPerDay - consumed).coerceAtLeast(0)
+                        Text(
+                            text = "Remaining: ${remaining} kcal",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+                        )
+                    }
                 }
             } else {
                 Text(
