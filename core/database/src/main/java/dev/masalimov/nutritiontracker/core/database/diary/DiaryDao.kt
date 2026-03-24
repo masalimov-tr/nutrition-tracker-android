@@ -14,7 +14,7 @@ interface DiaryDao {
 
     @Transaction
     @Query("SELECT * FROM DiaryEntity WHERE dateEpochDay = :epochDay")
-    fun getEntriesForDate(epochDay: Int): List<DiaryEntryWithFood>
+    suspend fun getEntriesForDate(epochDay: Int): List<DiaryEntryWithFood>
 
     @Query("DELETE FROM DiaryEntity WHERE uid = :entryId")
     suspend fun deleteEntry(entryId: Long)

@@ -22,7 +22,7 @@ class DatabaseModule {
         context = appContext,
         NutritionAppDatabase::class.java,
         "nutrition_app_database",
-    )
+    )   .fallbackToDestructiveMigration()
         .addCallback(prepopulateCallback)
         .build()
 

@@ -53,6 +53,8 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.hiltAndroid)
     ksp(libs.hiltAndroidCompiler)
+    implementation(libs.kotlinx.datetime)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
