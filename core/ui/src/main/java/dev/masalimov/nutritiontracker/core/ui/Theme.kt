@@ -1,6 +1,5 @@
-package dev.masalimov.nutritiontracker.ui.theme
+package dev.masalimov.nutritiontracker.core.ui
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

@@ -1,4 +1,4 @@
-package dev.masalimov.nutritiontracker.ui.theme
+package dev.masalimov.nutritiontracker.core.ui
 
 import androidx.compose.ui.graphics.Color
 

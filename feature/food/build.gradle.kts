@@ -42,6 +42,7 @@ android {
 dependencies {
     implementation(project(":data:food"))
     implementation(project(":domain"))
+    implementation(project(":core:ui"))
 
     // Kotlin + coroutines + lifecycle
     implementation(libs.androidx.lifecycle.viewmodel.ktx)

@@ -15,6 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme
 import dev.masalimov.nutritiontracker.feature.diary.DiaryScreen
 import dev.masalimov.nutritiontracker.feature.diary.DiaryScreenRoute
 import dev.masalimov.nutritiontracker.feature.diary.DiaryViewModel
@@ -24,7 +25,6 @@ import dev.masalimov.nutritiontracker.feature.food.details.FoodDetailsViewModel
 import dev.masalimov.nutritiontracker.feature.food.list.FoodListRoute
 import dev.masalimov.nutritiontracker.feature.food.list.FoodListScreen
 import dev.masalimov.nutritiontracker.feature.food.list.FoodViewModel
-import dev.masalimov.nutritiontracker.ui.theme.NutritionTrackerTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
