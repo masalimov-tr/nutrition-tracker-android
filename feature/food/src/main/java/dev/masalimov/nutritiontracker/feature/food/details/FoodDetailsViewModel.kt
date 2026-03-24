@@ -5,7 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.masalimov.nutritiontracker.data.food.FoodRepository
+import dev.masalimov.nutritiontracker.domain.FoodId
+import dev.masalimov.nutritiontracker.domain.food.FoodRepository
 import dev.masalimov.nutritiontracker.feature.food.list.FoodUiModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,9 +26,9 @@ class FoodDetailsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val food = foodRepository.getFoodById(foodId)
+            val food = foodRepository.getFoodById(FoodId(foodId))
             _uiState.value = FoodUiModel(
-                id = food.id,
+                id = food.id.id,
                 name = food.name,
                 caloriesPer100g = food.caloriesPer100g
             )

@@ -1,12 +1,15 @@
 package dev.masalimov.nutritiontracker.data.food
 
+import dev.masalimov.nutritiontracker.domain.Food
+import dev.masalimov.nutritiontracker.domain.FoodId
+import dev.masalimov.nutritiontracker.domain.food.FoodRepository
 import javax.inject.Inject
 
-class FakeFoodRepository @Inject constructor() : FoodRepository {
+internal class FakeFoodRepository @Inject constructor() : FoodRepository {
 
     private val listOfFoods = listOf(
         Food(
-            id = 1,
+            id = FoodId(1),
             name = "Apple",
             caloriesPer100g = 52.0,
             proteinPer100g = 0.3,
@@ -14,7 +17,7 @@ class FakeFoodRepository @Inject constructor() : FoodRepository {
             carbsPer100g = 14.0,
         ),
         Food(
-            id = 2,
+            id = FoodId(2),
             name = "Banana",
             caloriesPer100g = 96.0,
             proteinPer100g = 1.3,
@@ -22,7 +25,7 @@ class FakeFoodRepository @Inject constructor() : FoodRepository {
             carbsPer100g = 27.0,
         ),
         Food(
-            id = 3,
+            id = FoodId(3),
             name = "Chicken Breast (roasted)",
             caloriesPer100g = 165.0,
             proteinPer100g = 31.0,
@@ -30,7 +33,7 @@ class FakeFoodRepository @Inject constructor() : FoodRepository {
             carbsPer100g = 0.0,
         ),
         Food(
-            id = 4,
+            id = FoodId(4),
             name = "White Rice (cooked)",
             caloriesPer100g = 130.0,
             proteinPer100g = 2.4,
@@ -38,7 +41,7 @@ class FakeFoodRepository @Inject constructor() : FoodRepository {
             carbsPer100g = 28.0,
         ),
         Food(
-            id = 5,
+            id = FoodId(5),
             name = "Whole Milk",
             caloriesPer100g = 61.0,
             proteinPer100g = 3.2,
@@ -46,7 +49,7 @@ class FakeFoodRepository @Inject constructor() : FoodRepository {
             carbsPer100g = 4.8,
         ),
         Food(
-            id = 6,
+            id = FoodId(6),
             name = "Almonds",
             caloriesPer100g = 579.0,
             proteinPer100g = 21.2,
@@ -54,7 +57,7 @@ class FakeFoodRepository @Inject constructor() : FoodRepository {
             carbsPer100g = 21.6,
         ),
         Food(
-            id = 7,
+            id = FoodId(7),
             name = "Broccoli (raw)",
             caloriesPer100g = 34.0,
             proteinPer100g = 2.8,
@@ -62,7 +65,7 @@ class FakeFoodRepository @Inject constructor() : FoodRepository {
             carbsPer100g = 6.6,
         ),
         Food(
-            id = 8,
+            id = FoodId(8),
             name = "Olive Oil",
             caloriesPer100g = 884.0,
             proteinPer100g = 0.0,
@@ -70,7 +73,7 @@ class FakeFoodRepository @Inject constructor() : FoodRepository {
             carbsPer100g = 0.0,
         ),
         Food(
-            id = 9,
+            id = FoodId(9),
             name = "Egg (boiled)",
             caloriesPer100g = 155.0,
             proteinPer100g = 12.6,
@@ -78,7 +81,7 @@ class FakeFoodRepository @Inject constructor() : FoodRepository {
             carbsPer100g = 1.1,
         ),
         Food(
-            id = 10,
+            id = FoodId(10),
             name = "Salmon (grilled)",
             caloriesPer100g = 208.0,
             proteinPer100g = 20.4,
@@ -88,7 +91,7 @@ class FakeFoodRepository @Inject constructor() : FoodRepository {
     )
 
     override suspend fun getAllFood(): List<Food> = listOfFoods
-    override suspend fun getFoodById(foodId: Long): Food {
+    override suspend fun getFoodById(foodId: FoodId): Food {
         return listOfFoods.first { it.id == foodId }
     }
 }

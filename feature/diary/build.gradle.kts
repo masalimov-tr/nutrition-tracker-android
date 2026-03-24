@@ -1,12 +1,14 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hiltAndroid)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
-    namespace = "dev.masalimov.nutritiontracker.data.food"
+    namespace = "dev.masalimov.nutritiontracker.feature.diary"
     compileSdk = 36
 
     defaultConfig {
@@ -37,12 +39,24 @@ android {
 dependencies {
     implementation(project(":domain"))
 
+    // Kotlin + coroutines + lifecycle
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
+
+
+    // Compose
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.hiltAndroid)
-    implementation(libs.kotlinx.datetime)
+    implementation(libs.androidxHiltNavigationCompose)
     ksp(libs.hiltAndroidCompiler)
+    implementation(libs.kotlinx.datetime)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

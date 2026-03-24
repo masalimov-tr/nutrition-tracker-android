@@ -1,5 +1,6 @@
 [versions]
 agp = "8.13.2"
+javaxInject = "1"
 kotlin = "2.0.21"
 ksp = "2.0.21-1.0.28"
 hilt = "2.57.1"
@@ -18,9 +19,12 @@ lifecycleViewModelKtx = "2.10.0"
 coroutines = "1.10.2"
 runtime = "1.10.5"
 navigationCompose = "2.8.5"
+kotlinxDatetime = "0.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+javax-inject = { module = "javax.inject:javax.inject", version.ref = "javaxInject" }
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

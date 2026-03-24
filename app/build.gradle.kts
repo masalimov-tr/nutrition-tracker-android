@@ -42,7 +42,13 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:common"))
+    implementation(project(":domain"))
     implementation(project(":feature:food"))
+    implementation(project(":feature:diary"))
+    // Bring data DI bindings to the app runtime classpath
+    implementation(project(":data:food"))
+    implementation(project(":data:diary"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "dev.masalimov.nutritiontracker.data.food"
+    namespace = "dev.masalimov.nutritiontracker.data.diary"
     compileSdk = 36
 
     defaultConfig {

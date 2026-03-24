@@ -23,7 +23,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 object FoodListRoute
 
-
 @Composable
 fun FoodListScreen(
     modifier: Modifier = Modifier,

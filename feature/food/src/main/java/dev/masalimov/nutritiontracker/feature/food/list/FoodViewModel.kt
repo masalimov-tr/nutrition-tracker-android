@@ -3,7 +3,7 @@ package dev.masalimov.nutritiontracker.feature.food.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.masalimov.nutritiontracker.data.food.FoodRepository
+import dev.masalimov.nutritiontracker.domain.food.FoodRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,7 +33,7 @@ class FoodViewModel @Inject constructor(
             val foods = foodRepository.getAllFood()
             val uiModels = withContext(Dispatchers.Default) {
                 foods.map {
-                    FoodUiModel(id = it.id, name = it.name, caloriesPer100g = it.caloriesPer100g)
+                    FoodUiModel(id = it.id.id, name = it.name, caloriesPer100g = it.caloriesPer100g)
                 }
             }
             _uiState.update {

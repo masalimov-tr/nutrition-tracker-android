@@ -15,6 +15,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import dev.masalimov.nutritiontracker.feature.diary.DiaryScreen
+import dev.masalimov.nutritiontracker.feature.diary.DiaryScreenRoute
+import dev.masalimov.nutritiontracker.feature.diary.DiaryViewModel
 import dev.masalimov.nutritiontracker.feature.food.details.FoodDetailRoute
 import dev.masalimov.nutritiontracker.feature.food.details.FoodDetailScreen
 import dev.masalimov.nutritiontracker.feature.food.details.FoodDetailsViewModel
@@ -34,11 +37,12 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = FoodListRoute,
+                        startDestination = DiaryScreenRoute,
                         modifier = Modifier
                             .fillMaxSize()
                             .then(Modifier.padding(innerPadding))
                     ) {
+                        diaryScreen()
                         foodListScreen(onItemClick = {
                             navController.navigateToFoodDetail(it)
                         })
@@ -47,6 +51,13 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+}
+
+fun NavGraphBuilder.diaryScreen() {
+    composable<DiaryScreenRoute> {
+        val viewModel: DiaryViewModel = hiltViewModel()
+        DiaryScreen(viewModel)
     }
 }
 
