@@ -16,22 +16,29 @@ import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
 import javax.inject.Inject
 
-data class FoodUiModel(
-    val id: Long,
-    val name: String,
-    val caloriesPer100g: Double? = null,
-)
 
 data class DateUiModel(
     val date: LocalDate,
 )
 
+data class EatenFoodUiModel(
+    val name: String,
+    val quantityGram: Double,
+    val caloriesEaten: Int,
+    val caloriesPer100g: Int,
+)
+
+data class SuggestedFoodUiModel(
+    val name: String,
+    val caloriesPer100g: Double? = null,
+)
+
 data class DiaryUiState(
     val isLoading: Boolean,
     val date: DateUiModel? = null,
-    val foodList: List<FoodUiModel> = emptyList(),
-    val suggestedFoodList: List<FoodUiModel> = emptyList(),
-    val caloriesPerDay: Int? = null,
+    val eatenFoodList: List<EatenFoodUiModel> = emptyList(),
+    val suggestedFoodList: List<SuggestedFoodUiModel> = emptyList(),
+    val goalCaloriesPerDay: Int? = null,
 ) {
     companion object {
         fun loading() = DiaryUiState(isLoading = true)
@@ -64,17 +71,15 @@ class DiaryViewModel @Inject constructor(
                 )
             }
             val diary = getDiaryByDateUseCase(date)
-            val (foodList, suggestedFoodList) = withContext(Dispatchers.Default) {
-                val eatenFood = diary.eatenFood.map { it.toFoodUiModel() }
-                val suggestedFood = diary.suggestedFood.map { it.toFoodUiModel() }
-                eatenFood to suggestedFood
+            val (eatenFoodList, suggestedFoodList) = withContext(Dispatchers.Default) {
+                diary.diaryEntitiesPerDay.map { it.eatenFood.toEatenFoodUiModel() } to diary.suggestedFood.map(Food::toSuggestedFoodUiModel)
             }
             _diaryUiState.update {
                 it.copy(
                     isLoading = false,
-                    foodList = foodList,
+                    eatenFoodList = eatenFoodList,
                     suggestedFoodList = suggestedFoodList,
-                    caloriesPerDay = diary.caloriesPerDay,
+                    goalCaloriesPerDay = diary.caloriesPerDay,
                 )
             }
         }
@@ -86,8 +91,3 @@ class DiaryViewModel @Inject constructor(
     }
 }
 
-private fun Food.toFoodUiModel() = FoodUiModel(
-    id = id.id,
-    name = name,
-    caloriesPer100g = caloriesPer100g,
-)

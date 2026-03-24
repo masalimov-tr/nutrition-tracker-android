@@ -1,10 +1,24 @@
 package dev.masalimov.nutritiontracker.data.diary
 
+import dev.masalimov.nutritiontracker.core.database.diary.DiaryEntryWithFood
 import dev.masalimov.nutritiontracker.core.database.food.FoodEntity
+import dev.masalimov.nutritiontracker.domain.Diary
+import dev.masalimov.nutritiontracker.domain.DiaryId
+import dev.masalimov.nutritiontracker.domain.EatenFood
 import dev.masalimov.nutritiontracker.domain.Food
 import dev.masalimov.nutritiontracker.domain.FoodId
 
-internal fun FoodEntity.toFood(): Food {
+internal fun DiaryEntryWithFood.toDiary(): Diary {
+    return Diary(
+        id = DiaryId(this.diaryEntry.uid),
+        eatenFood = EatenFood(
+            diaryEntry.quantityGrams,
+            foodEntity.toFood()
+        )
+    )
+}
+
+private fun FoodEntity.toFood(): Food {
     return Food(
         id = FoodId(uid),
         name = name,
