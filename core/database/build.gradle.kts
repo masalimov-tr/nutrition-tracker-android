@@ -1,12 +1,11 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.hiltAndroid)
     alias(libs.plugins.ksp)
 }
 
 android {
-    namespace = "dev.masalimov.nutritiontracker.data.diary"
+    namespace = "dev.masalimov.nutritiontracker.core.database"
     compileSdk = 36
 
     defaultConfig {
@@ -14,6 +13,12 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                 arguments["room.schemaLocation"] = "$projectDir/schemas"
+            }
+        }
     }
 
     buildTypes {
@@ -34,17 +39,21 @@ android {
     }
 }
 
-dependencies {
-    implementation(project(":domain"))
-    implementation(project(":core:database"))
-    implementation(project(":core:common"))
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.incremental", "true")
+    arg("room.generateKotlin", "true")
+}
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
+dependencies {
+    implementation(project(":core:common"))
+    // Room
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
     implementation(libs.hiltAndroid)
-    implementation(libs.kotlinx.datetime)
     ksp(libs.hiltAndroidCompiler)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

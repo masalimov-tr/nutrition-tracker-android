@@ -1,5 +1,6 @@
 [versions]
 agp = "8.13.2"
+desugar_jdk_libs = "2.1.2"
 javaxInject = "1"
 kotlin = "2.0.21"
 ksp = "2.0.21-1.0.28"
@@ -20,9 +21,11 @@ coroutines = "1.10.2"
 runtime = "1.10.5"
 navigationCompose = "2.8.5"
 kotlinxDatetime = "0.6.1"
+room = "2.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 javax-inject = { module = "javax.inject:javax.inject", version.ref = "javaxInject" }
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -48,6 +51,9 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 hiltAndroid = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hiltAndroidCompiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
 androidxHiltNavigationCompose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

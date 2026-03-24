@@ -4,7 +4,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dev.masalimov.nutritiontracker.data.food.FakeFoodRepository
+import dev.masalimov.nutritiontracker.data.food.AppFoodRepository
 import dev.masalimov.nutritiontracker.domain.food.FoodRepository
 import javax.inject.Singleton
 
@@ -14,5 +14,5 @@ abstract class FoodDataModule {
 
     @Binds
     @Singleton
-    internal abstract fun bindFoodRepository(impl: FakeFoodRepository): FoodRepository
+    internal abstract fun bindFoodRepository(impl: AppFoodRepository): FoodRepository
 }

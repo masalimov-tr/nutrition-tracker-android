@@ -1,89 +1,73 @@
-package dev.masalimov.nutritiontracker.data.food
+package dev.masalimov.nutritiontracker.core.database
 
-import dev.masalimov.nutritiontracker.domain.Food
-import dev.masalimov.nutritiontracker.domain.FoodId
-import dev.masalimov.nutritiontracker.domain.food.FoodRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import javax.inject.Inject
+import dev.masalimov.nutritiontracker.core.database.food.FoodEntity
 
-internal class FakeFoodRepository @Inject constructor() : FoodRepository {
-
-    private val listOfFoods = listOf(
-        Food(
-            id = FoodId(1),
+object PrepopulationData {
+    val prepopulatedFoods = listOf(
+        FoodEntity(
             name = "Apple",
             caloriesPer100g = 52.0,
             proteinPer100g = 0.3,
             fatPer100g = 0.2,
             carbsPer100g = 14.0,
         ),
-        Food(
-            id = FoodId(2),
+        FoodEntity(
             name = "Banana",
             caloriesPer100g = 96.0,
             proteinPer100g = 1.3,
             fatPer100g = 0.3,
             carbsPer100g = 27.0,
         ),
-        Food(
-            id = FoodId(3),
+        FoodEntity(
             name = "Chicken Breast (roasted)",
             caloriesPer100g = 165.0,
             proteinPer100g = 31.0,
             fatPer100g = 3.6,
             carbsPer100g = 0.0,
         ),
-        Food(
-            id = FoodId(4),
+        FoodEntity(
             name = "White Rice (cooked)",
             caloriesPer100g = 130.0,
             proteinPer100g = 2.4,
             fatPer100g = 0.3,
             carbsPer100g = 28.0,
         ),
-        Food(
-            id = FoodId(5),
+        FoodEntity(
             name = "Whole Milk",
             caloriesPer100g = 61.0,
             proteinPer100g = 3.2,
             fatPer100g = 3.3,
             carbsPer100g = 4.8,
         ),
-        Food(
-            id = FoodId(6),
+        FoodEntity(
             name = "Almonds",
             caloriesPer100g = 579.0,
             proteinPer100g = 21.2,
             fatPer100g = 49.9,
             carbsPer100g = 21.6,
         ),
-        Food(
-            id = FoodId(7),
+        FoodEntity(
             name = "Broccoli (raw)",
             caloriesPer100g = 34.0,
             proteinPer100g = 2.8,
             fatPer100g = 0.4,
             carbsPer100g = 6.6,
         ),
-        Food(
-            id = FoodId(8),
+        FoodEntity(
             name = "Olive Oil",
             caloriesPer100g = 884.0,
             proteinPer100g = 0.0,
             fatPer100g = 100.0,
             carbsPer100g = 0.0,
         ),
-        Food(
-            id = FoodId(9),
+        FoodEntity(
             name = "Egg (boiled)",
             caloriesPer100g = 155.0,
             proteinPer100g = 12.6,
             fatPer100g = 10.6,
             carbsPer100g = 1.1,
         ),
-        Food(
-            id = FoodId(10),
+        FoodEntity(
             name = "Salmon (grilled)",
             caloriesPer100g = 208.0,
             proteinPer100g = 20.4,
@@ -91,19 +75,4 @@ internal class FakeFoodRepository @Inject constructor() : FoodRepository {
             carbsPer100g = 0.0,
         ),
     )
-
-    override suspend fun getAllFood(): List<Food> = listOfFoods
-    override fun getAllFoodStream(): Flow<List<Food>> {
-        return flow {
-            emit(listOfFoods)
-        }
-    }
-
-    override suspend fun getFoodById(foodId: FoodId): Food {
-        return listOfFoods.first { it.id == foodId }
-    }
-
-    override suspend fun getSuggestedFood(eatenFood: List<Food>): List<Food> {
-        return listOf()
-    }
 }

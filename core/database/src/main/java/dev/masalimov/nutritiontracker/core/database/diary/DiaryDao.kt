@@ -1,0 +1,21 @@
+package dev.masalimov.nutritiontracker.core.database.diary
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Transaction
+
+@Dao
+interface DiaryDao {
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insert(diaryEntity: DiaryEntity): Long
+
+    @Transaction
+    @Query("SELECT * FROM DiaryEntity WHERE dateEpochDay = :epochDay")
+    fun getEntriesForDate(epochDay: Int): List<DiaryEntryWithFood>
+
+    @Query("DELETE FROM DiaryEntity WHERE uid = :entryId")
+    suspend fun deleteEntry(entryId: Long)
+}
