@@ -26,7 +26,7 @@ internal class AppFoodRepository @Inject constructor(
     }
 
     override suspend fun getSuggestedFood(eatenFood: List<Food>): List<Food> {
-        delay(1000)
+        delay(10000)
         val allFoods = foodDao.getAll()
         if (allFoods.isEmpty()) return emptyList()
         return allFoods.take(5).map(FoodEntity::toFood)

@@ -38,6 +38,7 @@ data class DiaryUiState(
     val date: DateUiModel? = null,
     val eatenFoodList: List<EatenFoodUiModel> = emptyList(),
     val suggestedFoodList: List<SuggestedFoodUiModel> = emptyList(),
+    val caloriesEatenTotal: Int? = null,
     val goalCaloriesPerDay: Int? = null,
 ) {
     companion object {
@@ -71,12 +72,16 @@ class DiaryViewModel @Inject constructor(
                 )
             }
             val diary = getDiaryByDateUseCase(date)
-            val (eatenFoodList, suggestedFoodList) = withContext(Dispatchers.Default) {
-                diary.diaryEntitiesPerDay.map { it.eatenFood.toEatenFoodUiModel() } to diary.suggestedFood.map(Food::toSuggestedFoodUiModel)
+            val (eatenFoodList, suggestedFoodList, caloriesEaten) = withContext(Dispatchers.Default) {
+                Triple(
+                    diary.diaryEntitiesPerDay.map { it.eatenFood.toEatenFoodUiModel() },
+                    diary.suggestedFood.map(Food::toSuggestedFoodUiModel),
+                    diary.diaryEntitiesPerDay.sumOf { it.eatenFood.calories })
             }
             _diaryUiState.update {
                 it.copy(
                     isLoading = false,
+                    caloriesEatenTotal = caloriesEaten,
                     eatenFoodList = eatenFoodList,
                     suggestedFoodList = suggestedFoodList,
                     goalCaloriesPerDay = diary.caloriesPerDay,
