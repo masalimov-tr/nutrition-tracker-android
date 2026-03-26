@@ -58,7 +58,7 @@ class DiaryViewModel @Inject constructor(
                     emit(
                         DiaryUiState(
                             isLoading = true,
-                            dateList = calendar.map { dateUiModel ->
+                            dateList = uiState.value.dateList.map { dateUiModel ->
                                 dateUiModel.copy(isSelected = dateUiModel.date == date)
                             },
                         )
