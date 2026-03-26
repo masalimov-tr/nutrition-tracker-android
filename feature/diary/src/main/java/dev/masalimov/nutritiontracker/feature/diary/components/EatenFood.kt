@@ -18,8 +18,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme
-import dev.masalimov.nutritiontracker.core.ui.components.ShimmerBar
 import dev.masalimov.nutritiontracker.core.ui.components.AppCard
+import dev.masalimov.nutritiontracker.core.ui.components.ShimmerBar
 import dev.masalimov.nutritiontracker.feature.diary.EatenFoodUiModel
 
 @Composable
@@ -103,7 +103,6 @@ private fun DiaryListItem(item: EatenFoodUiModel) {
                     style = MaterialTheme.typography.labelMedium,
                 )
             }
-
         }
     }
 }

@@ -18,6 +18,7 @@ fun AppCard(
     containerColor: Color = MaterialTheme.colorScheme.surface,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     cornerRadius : Dp = 20.dp,
+    onClick: () -> Unit = {},
     borderStroke: BorderStroke? = BorderStroke(1.dp, contentColor.copy(alpha = 0.12f)),
     content: @Composable () -> Unit,
 ) {
@@ -29,7 +30,8 @@ fun AppCard(
             contentColor = contentColor,
         ),
         border = borderStroke,
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        onClick = onClick,
     ) {
         content()
     }

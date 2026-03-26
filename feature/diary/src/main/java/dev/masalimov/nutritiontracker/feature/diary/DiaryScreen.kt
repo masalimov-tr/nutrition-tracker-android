@@ -5,8 +5,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -21,6 +25,8 @@ import dev.masalimov.nutritiontracker.feature.diary.components.DateHeader
 import dev.masalimov.nutritiontracker.feature.diary.components.DateList
 import dev.masalimov.nutritiontracker.feature.diary.components.EatenFood
 import dev.masalimov.nutritiontracker.feature.diary.components.SuggestedFood
+import dev.masalimov.nutritiontracker.feature.food.list.FoodListScreen
+import dev.masalimov.nutritiontracker.feature.food.list.FoodViewModel
 import kotlinx.serialization.Serializable
 
 
@@ -36,50 +42,79 @@ fun DiaryScreen(
     DiaryContent(uiState, viewModel::onSelectDate)
 }
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 private fun DiaryContent(
     uiState: DiaryUiState,
     onDayClick: (DiaryDate) -> Unit = {},
 ) {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background,
-    ) {
-        LazyColumn(
+    val diaryBottomSheetState = rememberDiaryBottomSheetState()
+
+    Scaffold(
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = { diaryBottomSheetState.open() }
+            ) {
+                Text("Log food")
+            }
+        }
+    ) { innerPadding ->
+        Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
+                .padding(innerPadding),
+            color = MaterialTheme.colorScheme.background,
         ) {
-            item(key = "date_header") {
-                DateHeader(
-                    Modifier.fillMaxWidth(),
-                    uiState.dateList.find { it.isSelected },
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp),
+            ) {
+                item(key = "date_header") {
+                    DateHeader(
+                        Modifier.fillMaxWidth(),
+                        uiState.dateList.find { it.isSelected },
                     )
-            }
+                }
 
-            item(key = "date_list") {
-                DateList(
-                    modifier = Modifier.fillMaxWidth(),
-                    uiState.isLoading,
-                    uiState.dateList,
-                    onDayClick = onDayClick
+                item(key = "date_list") {
+                    DateList(
+                        modifier = Modifier.fillMaxWidth(),
+                        uiState.isLoading,
+                        uiState.dateList,
+                        onDayClick = onDayClick
+                    )
+                }
+
+                item(key = "calories_card") {
+                    CaloriesCard(
+                        caloriesPerDay = uiState.goalCaloriesPerDay,
+                        consumedCalories = uiState.caloriesEatenTotal
+                    )
+                }
+
+                item(key = "eaten_food_section") {
+                    EatenFood(uiState.eatenFoodList, uiState.isLoading)
+                }
+
+                item(key = "suggested_food_section") {
+                    SuggestedFood(uiState.suggestedFoodList)
+                }
+            }
+        }
+
+        if (diaryBottomSheetState.isExtended) {
+            ModalBottomSheet(
+                onDismissRequest = { diaryBottomSheetState.close() },
+                sheetState = diaryBottomSheetState.sheetState,
+                containerColor = MaterialTheme.colorScheme.background,
+            ) {
+                val foodVm: FoodViewModel = hiltViewModel()
+                FoodListScreen(
+                    viewModel = foodVm,
+                    onItemClick = { _ -> diaryBottomSheetState.close() }
                 )
-            }
-
-            item(key = "calories_card") {
-                CaloriesCard(
-                    caloriesPerDay = uiState.goalCaloriesPerDay,
-                    consumedCalories = uiState.caloriesEatenTotal
-                )
-            }
-
-            item(key = "eaten_food_section") {
-                EatenFood(uiState.eatenFoodList, uiState.isLoading)
-            }
-
-            item(key = "suggested_food_section") {
-                SuggestedFood(uiState.suggestedFoodList)
             }
         }
     }
