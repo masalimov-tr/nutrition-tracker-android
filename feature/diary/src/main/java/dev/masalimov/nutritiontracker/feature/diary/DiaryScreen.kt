@@ -52,7 +52,10 @@ private fun DiaryContent(
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             item(key = "date_header") {
-                DateHeader(uiState.dateList.find { it.isSelected })
+                DateHeader(
+                    Modifier.fillMaxWidth().padding(top = 32.dp),
+                    uiState.dateList.find { it.isSelected },
+                    )
             }
 
             item(key = "date_list") {

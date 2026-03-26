@@ -47,7 +47,7 @@ fun DateList(
             DayButton(
                 date = it.date,
                 selected = it.isSelected,
-                onClick = { onDayClick(it.date) }
+                onClick = onDayClick
             )
         }
     }
@@ -58,7 +58,7 @@ fun DayButton(
     date: DiaryDate,
     selected: Boolean,
     caloriesOver: Boolean = false,
-    onClick: () -> Unit = {},
+    onClick: (DiaryDate) -> Unit = {},
 ) {
     val androidLocale = LocalConfiguration.current.locales[0]
     val dayFormatter = remember(androidLocale) {
@@ -67,7 +67,6 @@ fun DayButton(
     val monthFormatter = remember(androidLocale) {
         DateTimeFormatter.ofPattern("MMM").withLocale(androidLocale)
     }
-
 
     val surfaceColor = if (selected)
         MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
@@ -80,12 +79,12 @@ fun DayButton(
 
     Box(
         modifier = Modifier
+            .clickable(onClick = { onClick(date) })
             .background(
                 color = surfaceColor,
                 shape = RoundedCornerShape(30.dp)
             )
-            .padding(horizontal = 8.dp, vertical = 16.dp)
-            .clickable(onClick = onClick),
+            .padding(horizontal = 8.dp, vertical = 16.dp),
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
