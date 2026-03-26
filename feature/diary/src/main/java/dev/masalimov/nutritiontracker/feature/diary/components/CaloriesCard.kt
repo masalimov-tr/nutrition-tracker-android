@@ -16,14 +16,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import dev.masalimov.nutritiontracker.core.ui.components.AppPrimaryCard
+import dev.masalimov.nutritiontracker.core.ui.components.AppSurfaceCard
 
 @Composable
 internal fun CaloriesCard(
     caloriesPerDay: Int? = null,
     consumedCalories: Int? = null,
 ) {
-    AppPrimaryCard(
+    AppSurfaceCard(
         modifier = Modifier.Companion.fillMaxWidth(),
     ) {
         Column(
@@ -32,7 +32,6 @@ internal fun CaloriesCard(
             Text(
                 text = "Daily calories",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Companion.SemiBold),
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
             if (caloriesPerDay != null && consumedCalories != null) {
                 CaloriesCardContent(caloriesPerDay, consumedCalories)
@@ -40,7 +39,7 @@ internal fun CaloriesCard(
                 Text(
                     text = "Loading...",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                     modifier = Modifier.Companion.padding(top = 8.dp)
                 )
             }
@@ -84,7 +83,6 @@ private fun CaloriesCardContent(
             Text(
                 text = "Remaining: $remaining kcal",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
             )
         }
     }

@@ -2,25 +2,26 @@ package dev.masalimov.nutritiontracker.core.ui
 
 import androidx.compose.ui.graphics.Color
 
-// Light, calm fitness palette inspired by soft blues and subtle neutrals
-// Primary brand blue for highlights and actions
-val BluePrimary = Color(0xFF5B72FF)
-// Slightly lighter blue for secondary accents
-val BlueSecondary = Color(0xFF7F96FF)
-// Very light bluish background for screens
-val BackgroundSoft = Color(0xFFF6F8FF)
-// Surfaces (cards) are mostly white with a hint of blue
-val SurfaceSoft = Color(0xFFFFFFFF)
-// Containers with a tinted blue background
-val PrimaryContainer = Color(0xFFE7ECFF)
-val SecondaryContainer = Color(0xFFF0F3FF)
+// Light, warm wellness palette inspired by soft greens and creamy neutrals
+// Keep the existing names to minimize code changes across the project.
+// Primary brand green for highlights and actions
+val PrimaryGreen = Color(0xFF4B7669) // primary green accent (75,118,105)
+// Secondary desaturated green for subtle accents
+val SecondarySand = Color(0xFFF7F3E6) // secondary sand accent (247,243,230)
+// Very light warm background for screens
+val BackgroundCream = Color(0xFFFBF9EF) // background cream (251,249,239)
+// Surfaces (cards) are white for clarity
+val SurfaceIvory = Color(0xFFFFFEF9) // surfaces/cards (255,254,249)
+// Containers with a soft green / warm tint
+val PrimaryContainer = Color(0xFFD9E8E1) // pale mint
+val SecondaryContainer = Color(0xFFF2ECE4) // warm off‑white
 
 // On-colors
 val OnPrimary = Color(0xFFFFFFFF)
-val OnPrimaryContainer = Color(0xFF1431A6)
-val OnSecondaryContainer = Color(0xFF2D3B7A)
-val OnSurface = Color(0xFF1E2433)
-val OnSurfaceVariant = Color(0xFF5C6B8A)
+val OnPrimaryContainer = Color(0xFF1F3D33) // dark green text on pale mint
+val OnSecondaryContainer = Color(0xFF3E5A4D) // dark olive
+val OnSurface = Color(0xFF1E1B16) // near black with warm tone
+val OnSurfaceVariant = Color(0xFF6D6A5F) // warm gray
 
 // Additional
-val Outline = Color(0xFFD9DEEE)
+val Outline = Color(0xFFDDD6C5) // light warm outline
