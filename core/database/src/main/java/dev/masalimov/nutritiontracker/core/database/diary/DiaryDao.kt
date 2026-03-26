@@ -1,5 +1,6 @@
 package dev.masalimov.nutritiontracker.core.database.diary
 
+
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -10,17 +11,24 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface DiaryDao {
 
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(diaryEntity: DiaryEntity): Long
 
-    @Transaction
-    @Query("SELECT * FROM DiaryEntity WHERE dateEpochDay = :epochDay")
-    suspend fun getEntriesForDate(epochDay: Int): List<DiaryEntryWithFood>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCrossRef(crossRef: DiaryEntryFoodCrossRef)
 
     @Transaction
-    @Query("SELECT * FROM DiaryEntity WHERE dateEpochDay = :epochDay")
-    fun getEntriesForDateFlow(epochDay: Int): Flow<List<DiaryEntryWithFood>>
+    @Query("SELECT * FROM DiaryEntity WHERE dateEpochDay = :epochDay LIMIT 1")
+    suspend fun getDiaryForDate(epochDay: Int): DiaryEntryWithFoods?
+
+    @Transaction
+    @Query("SELECT * FROM DiaryEntity WHERE dateEpochDay = :epochDay LIMIT 1")
+    fun getDiaryForDateFlow(epochDay: Int): Flow<DiaryEntryWithFoods?>
 
     @Query("DELETE FROM DiaryEntity WHERE uid = :entryId")
-    suspend fun deleteEntry(entryId: Long)
+    suspend fun deleteDiary(entryId: Long)
+
+    @Transaction
+    @Query("SELECT * FROM DiaryEntity")
+    fun getAllDiaryEntriesFlow(): Flow<List<DiaryEntryWithFoods>>
 }

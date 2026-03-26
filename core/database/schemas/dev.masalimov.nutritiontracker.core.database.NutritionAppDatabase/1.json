@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "3af21d808a70f9f775dfbcb368417bc2",
+    "identityHash": "e23d7bc8f70cd666bf3b9b5781774505",
     "entities": [
       {
         "tableName": "FoodEntity",
@@ -56,11 +56,43 @@
       },
       {
         "tableName": "DiaryEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `foodId` INTEGER NOT NULL, `quantityGrams` REAL NOT NULL, `dateEpochDay` INTEGER NOT NULL, `foodNameAtLog` TEXT NOT NULL, `caloriesPer100gAtLog` REAL NOT NULL, `proteinPer100gAtLog` REAL NOT NULL, `fatPer100gAtLog` REAL NOT NULL, `carbsPer100gAtLog` REAL NOT NULL, FOREIGN KEY(`foodId`) REFERENCES `FoodEntity`(`uid`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `dateEpochDay` INTEGER NOT NULL, `goalCaloriesPerDay` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "uid",
             "columnName": "uid",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateEpochDay",
+            "columnName": "dateEpochDay",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "goalCaloriesPerDay",
+            "columnName": "goalCaloriesPerDay",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "uid"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "DiaryEntryFoodCrossRef",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`diaryEntryId` INTEGER NOT NULL, `foodId` INTEGER NOT NULL, `quantityGrams` REAL NOT NULL, PRIMARY KEY(`diaryEntryId`, `foodId`), FOREIGN KEY(`diaryEntryId`) REFERENCES `DiaryEntity`(`uid`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`foodId`) REFERENCES `FoodEntity`(`uid`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "diaryEntryId",
+            "columnName": "diaryEntryId",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -75,62 +107,47 @@
             "columnName": "quantityGrams",
             "affinity": "REAL",
             "notNull": true
-          },
-          {
-            "fieldPath": "dateEpochDay",
-            "columnName": "dateEpochDay",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "foodNameAtLog",
-            "columnName": "foodNameAtLog",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "caloriesPer100gAtLog",
-            "columnName": "caloriesPer100gAtLog",
-            "affinity": "REAL",
-            "notNull": true
-          },
-          {
-            "fieldPath": "proteinPer100gAtLog",
-            "columnName": "proteinPer100gAtLog",
-            "affinity": "REAL",
-            "notNull": true
-          },
-          {
-            "fieldPath": "fatPer100gAtLog",
-            "columnName": "fatPer100gAtLog",
-            "affinity": "REAL",
-            "notNull": true
-          },
-          {
-            "fieldPath": "carbsPer100gAtLog",
-            "columnName": "carbsPer100gAtLog",
-            "affinity": "REAL",
-            "notNull": true
           }
         ],
         "primaryKey": {
-          "autoGenerate": true,
+          "autoGenerate": false,
           "columnNames": [
-            "uid"
+            "diaryEntryId",
+            "foodId"
           ]
         },
         "indices": [
           {
-            "name": "index_DiaryEntity_foodId",
+            "name": "index_DiaryEntryFoodCrossRef_diaryEntryId",
+            "unique": false,
+            "columnNames": [
+              "diaryEntryId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_DiaryEntryFoodCrossRef_diaryEntryId` ON `${TABLE_NAME}` (`diaryEntryId`)"
+          },
+          {
+            "name": "index_DiaryEntryFoodCrossRef_foodId",
             "unique": false,
             "columnNames": [
               "foodId"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_DiaryEntity_foodId` ON `${TABLE_NAME}` (`foodId`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_DiaryEntryFoodCrossRef_foodId` ON `${TABLE_NAME}` (`foodId`)"
           }
         ],
         "foreignKeys": [
+          {
+            "table": "DiaryEntity",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "diaryEntryId"
+            ],
+            "referencedColumns": [
+              "uid"
+            ]
+          },
           {
             "table": "FoodEntity",
             "onDelete": "NO ACTION",
@@ -148,7 +165,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3af21d808a70f9f775dfbcb368417bc2')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e23d7bc8f70cd666bf3b9b5781774505')"
     ]
   }
 }

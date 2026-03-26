@@ -53,7 +53,7 @@ private fun DiaryContent(
         ) {
             item(key = "date_header") {
                 DateHeader(
-                    Modifier.fillMaxWidth().padding(top = 32.dp),
+                    Modifier.fillMaxWidth(),
                     uiState.dateList.find { it.isSelected },
                     )
             }

@@ -23,5 +23,8 @@ data class DiaryDate(
 
         fun of(date: LocalDate): DiaryDate =
             DiaryDate(date)
+
+        fun of(epochDay: Int): DiaryDate =
+            DiaryDate(LocalDate.fromEpochDays(epochDay))
     }
 }

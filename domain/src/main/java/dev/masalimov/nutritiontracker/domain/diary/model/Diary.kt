@@ -16,5 +16,10 @@ data class EatenFood(
 
 data class Diary(
     val id: DiaryId,
-    val eatenFood: EatenFood,
-)
+    val date: DiaryDate,
+    val eatenFood: List<EatenFood>,
+    val goalCaloriesPerDay: Int,
+) {
+    val caloriesEaten: Int
+        get() = eatenFood.sumOf { it.calories }
+}

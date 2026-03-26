@@ -26,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
+import dev.masalimov.nutritiontracker.domain.diary.CalorieConsumptionStatus
 import dev.masalimov.nutritiontracker.feature.diary.DateUiModel
 import kotlinx.datetime.toJavaLocalDate
 import java.time.format.DateTimeFormatter
@@ -49,6 +50,7 @@ fun DateList(
             DayButton(
                 date = it.date,
                 selected = it.isSelected,
+                calorieConsumptionStatus = it.calorieConsumptionStatus,
                 onClick = onDayClick,
                 isScreenLoading = isScreenLoading,
             )
@@ -60,7 +62,7 @@ fun DateList(
 fun DayButton(
     date: DiaryDate,
     selected: Boolean,
-    caloriesOver: Boolean = false,
+    calorieConsumptionStatus: CalorieConsumptionStatus = CalorieConsumptionStatus.Unknown,
     onClick: (DiaryDate) -> Unit = {},
     isScreenLoading: Boolean = false,
 ) {
@@ -107,17 +109,18 @@ fun DayButton(
                 color = textColor,
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Box(
-                modifier = Modifier
-                    .background(
-                        shape = CircleShape,
-                        color = if (!selected && caloriesOver)
-                            MaterialTheme.colorScheme.error
-                        else
-                            MaterialTheme.colorScheme.primary
-                    )
-                    .size(6.dp)
-            )
+            if (selected.not() && calorieConsumptionStatus !is CalorieConsumptionStatus.Unknown)
+                Box(
+                    modifier = Modifier
+                        .background(
+                            shape = CircleShape,
+                            color = if (calorieConsumptionStatus is CalorieConsumptionStatus.Over)
+                                MaterialTheme.colorScheme.error
+                            else
+                                MaterialTheme.colorScheme.primary
+                        )
+                        .size(6.dp)
+                )
         }
     }
 }
@@ -130,8 +133,8 @@ private fun DayButtonPreview() {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            DayButton(DiaryDate.today().previousDay(), selected = false, caloriesOver = true)
-            DayButton(DiaryDate.today(), selected = false, caloriesOver = false)
+            DayButton(DiaryDate.today().previousDay(), selected = false, calorieConsumptionStatus = CalorieConsumptionStatus.Over)
+            DayButton(DiaryDate.today(), selected = false, calorieConsumptionStatus = CalorieConsumptionStatus.NotOver)
             DayButton(DiaryDate.today().plusDays(1), false)
             DayButton(DiaryDate.today().plusDays(2), true)
             DayButton(DiaryDate.today().plusDays(3), false)

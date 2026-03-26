@@ -5,7 +5,7 @@ import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
 import kotlinx.coroutines.flow.Flow
 
 interface DiaryRepository {
-    suspend fun getDiaryEntriesByDate(date: DiaryDate): List<Diary>
+    fun getDiaryByDateFlow(date: DiaryDate) : Flow<Diary?>
 
-    fun getDiaryEntriesByDateFlow(date: DiaryDate) : Flow<List<Diary>>
+    fun getAllDiaryEntriesFlow(): Flow<List<Diary>>
 }

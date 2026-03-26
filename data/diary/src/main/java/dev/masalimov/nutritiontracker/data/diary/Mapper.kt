@@ -1,20 +1,25 @@
 package dev.masalimov.nutritiontracker.data.diary
 
-import dev.masalimov.nutritiontracker.core.database.diary.DiaryEntryWithFood
+import dev.masalimov.nutritiontracker.core.database.diary.DiaryEntryWithFoods
 import dev.masalimov.nutritiontracker.core.database.food.FoodEntity
 import dev.masalimov.nutritiontracker.domain.diary.model.Diary
+import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryId
 import dev.masalimov.nutritiontracker.domain.diary.model.EatenFood
 import dev.masalimov.nutritiontracker.domain.food.Food
 import dev.masalimov.nutritiontracker.domain.food.FoodId
 
-internal fun DiaryEntryWithFood.toDiary(): Diary {
+internal fun DiaryEntryWithFoods.toDiary(date: DiaryDate): Diary {
     return Diary(
         id = DiaryId(this.diaryEntry.uid),
-        eatenFood = EatenFood(
-            diaryEntry.quantityGrams,
-            foodEntity.toFood()
-        )
+        date = date,
+        eatenFood =  items.map {
+            EatenFood(
+                it.link.quantityGrams,
+                it.food.toFood()
+            )
+        },
+        goalCaloriesPerDay = diaryEntry.goalCaloriesPerDay
     )
 }
 

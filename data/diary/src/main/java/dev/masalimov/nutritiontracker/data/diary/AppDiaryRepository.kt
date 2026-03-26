@@ -16,15 +16,16 @@ internal class AppDiaryRepository @Inject constructor(
     private val diaryDao: DiaryDao,
 ) : DiaryRepository {
 
-    override suspend fun getDiaryEntriesByDate(date: DiaryDate): List<Diary> {
-        return diaryDao.getEntriesForDate(date.toEpochDay()).map {
-            it.toDiary()
+    override fun getDiaryByDateFlow(date: DiaryDate): Flow<Diary?> {
+        return diaryDao.getDiaryForDateFlow(date.toEpochDay()).map { dbModel ->
+            dbModel?.toDiary(date)
         }
+
     }
 
-    override fun getDiaryEntriesByDateFlow(date: DiaryDate): Flow<List<Diary>> {
-        return diaryDao.getEntriesForDateFlow(date.toEpochDay()).map {
-            it.map { it.toDiary() }
+    override fun getAllDiaryEntriesFlow(): Flow<List<Diary>> {
+        return diaryDao.getAllDiaryEntriesFlow().map {
+            it.map { it.toDiary(DiaryDate.of(it.diaryEntry.dateEpochDay)) }
         }
     }
 }

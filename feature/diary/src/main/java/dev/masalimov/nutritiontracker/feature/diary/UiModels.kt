@@ -1,5 +1,6 @@
 package dev.masalimov.nutritiontracker.feature.diary
 
+import dev.masalimov.nutritiontracker.domain.diary.CalorieConsumptionStatus
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
 
 
@@ -21,10 +22,10 @@ data class DiaryUiState(
     }
 }
 
-
 data class DateUiModel(
     val date: DiaryDate,
     val isSelected: Boolean,
+    val calorieConsumptionStatus: CalorieConsumptionStatus = CalorieConsumptionStatus.Unknown,
 )
 
 data class EatenFoodUiModel(
