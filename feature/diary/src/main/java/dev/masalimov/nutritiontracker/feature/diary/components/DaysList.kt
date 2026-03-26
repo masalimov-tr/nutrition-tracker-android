@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -33,6 +34,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun DateList(
     modifier: Modifier = Modifier,
+    isScreenLoading: Boolean = false,
     dateList: List<DateUiModel> = emptyList(),
     onDayClick: (DiaryDate) -> Unit = {},
 ) {
@@ -47,7 +49,8 @@ fun DateList(
             DayButton(
                 date = it.date,
                 selected = it.isSelected,
-                onClick = onDayClick
+                onClick = onDayClick,
+                isScreenLoading = isScreenLoading,
             )
         }
     }
@@ -59,6 +62,7 @@ fun DayButton(
     selected: Boolean,
     caloriesOver: Boolean = false,
     onClick: (DiaryDate) -> Unit = {},
+    isScreenLoading: Boolean = false,
 ) {
     val androidLocale = LocalConfiguration.current.locales[0]
     val dayFormatter = remember(androidLocale) {
@@ -77,13 +81,16 @@ fun DayButton(
     else
         MaterialTheme.colorScheme.onSurfaceVariant
 
+    val shape = RoundedCornerShape(30.dp)
+
     Box(
         modifier = Modifier
-            .clickable(onClick = { onClick(date) })
+            .clip(shape)
             .background(
                 color = surfaceColor,
-                shape = RoundedCornerShape(30.dp)
+                shape = shape
             )
+            .clickable(enabled = isScreenLoading.not(), onClick = { onClick(date) })
             .padding(horizontal = 8.dp, vertical = 16.dp),
     ) {
         Column(
