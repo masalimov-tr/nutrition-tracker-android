@@ -47,7 +47,7 @@ class DiaryViewModel @Inject constructor(
                             ),
                         )
                     },
-                    caloriesEatenTotal = diaryInfoForDate.diary?.caloriesEaten,
+                    caloriesEatenTotal = diaryInfoForDate.diary?.caloriesEaten ?: 0,
                     eatenFoodList = diaryInfoForDate.diary?.eatenFood?.map { it.toEatenFoodUiModel() } ?: emptyList(),
                     suggestedFoodList = diaryInfoForDate.suggestedFood.map(Food::toSuggestedFoodUiModel),
                     goalCaloriesPerDay = diaryInfoForDate.diary?.goalCaloriesPerDay ?: goalCalories.caloriesPerDay,
