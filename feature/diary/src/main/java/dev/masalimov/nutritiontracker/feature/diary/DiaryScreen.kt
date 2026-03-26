@@ -60,7 +60,7 @@ private fun DiaryContent(
 
             item(key = "date_list") {
                 DateList(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     uiState.isLoading,
                     uiState.dateList,
                     onDayClick = onDayClick
