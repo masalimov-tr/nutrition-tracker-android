@@ -2,11 +2,11 @@ package dev.masalimov.nutritiontracker.data.diary
 
 import dev.masalimov.nutritiontracker.core.database.diary.DiaryEntryWithFood
 import dev.masalimov.nutritiontracker.core.database.food.FoodEntity
-import dev.masalimov.nutritiontracker.domain.Diary
-import dev.masalimov.nutritiontracker.domain.DiaryId
-import dev.masalimov.nutritiontracker.domain.EatenFood
-import dev.masalimov.nutritiontracker.domain.Food
-import dev.masalimov.nutritiontracker.domain.FoodId
+import dev.masalimov.nutritiontracker.domain.diary.model.Diary
+import dev.masalimov.nutritiontracker.domain.diary.model.DiaryId
+import dev.masalimov.nutritiontracker.domain.diary.model.EatenFood
+import dev.masalimov.nutritiontracker.domain.food.Food
+import dev.masalimov.nutritiontracker.domain.food.FoodId
 
 internal fun DiaryEntryWithFood.toDiary(): Diary {
     return Diary(

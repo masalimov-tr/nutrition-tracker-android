@@ -1,7 +1,5 @@
 package dev.masalimov.nutritiontracker.domain.food
 
-import dev.masalimov.nutritiontracker.domain.Food
-import dev.masalimov.nutritiontracker.domain.FoodId
 import kotlinx.coroutines.flow.Flow
 
 interface FoodRepository {

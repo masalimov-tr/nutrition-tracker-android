@@ -1,4 +1,4 @@
-package dev.masalimov.nutritiontracker.core.ui
+package dev.masalimov.nutritiontracker.core.ui.components
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
@@ -89,7 +89,7 @@ private fun rememberShimmerBrush(
 @Preview(showBackground = true)
 @Composable
 private fun ShimmerBarPreview() {
-    NutritionTrackerTheme {
+    _root_ide_package_.dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme {
         ShimmerBar(
             modifier = Modifier
                 .fillMaxWidth()
@@ -102,7 +102,7 @@ private fun ShimmerBarPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun ShimmerCirclePreview() {
-    NutritionTrackerTheme {
+    _root_ide_package_.dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme {
         ShimmerCircle(
             modifier = Modifier.size(48.dp),
         )

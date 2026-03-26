@@ -1,4 +1,4 @@
-package dev.masalimov.nutritiontracker.domain
+package dev.masalimov.nutritiontracker.domain.diary.model
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit

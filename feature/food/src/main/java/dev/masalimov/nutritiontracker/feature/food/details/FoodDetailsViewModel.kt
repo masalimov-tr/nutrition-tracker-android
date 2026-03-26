@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.masalimov.nutritiontracker.domain.FoodId
+import dev.masalimov.nutritiontracker.domain.food.FoodId
 import dev.masalimov.nutritiontracker.domain.food.FoodRepository
 import dev.masalimov.nutritiontracker.feature.food.list.FoodUiModel
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -2,8 +2,8 @@ package dev.masalimov.nutritiontracker.data.food
 
 import dev.masalimov.nutritiontracker.core.database.food.FoodDao
 import dev.masalimov.nutritiontracker.core.database.food.FoodEntity
-import dev.masalimov.nutritiontracker.domain.Food
-import dev.masalimov.nutritiontracker.domain.FoodId
+import dev.masalimov.nutritiontracker.domain.food.Food
+import dev.masalimov.nutritiontracker.domain.food.FoodId
 import dev.masalimov.nutritiontracker.domain.food.FoodRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

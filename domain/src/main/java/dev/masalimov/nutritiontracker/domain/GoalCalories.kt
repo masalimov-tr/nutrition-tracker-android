@@ -1,5 +1,8 @@
 package dev.masalimov.nutritiontracker.domain
 
-object GoalCalories {
-    val caloriesPerDay = 1500
+import javax.inject.Inject
+
+class GoalCalories @Inject constructor(
+) {
+    val caloriesPerDay: Int = 1500
 }

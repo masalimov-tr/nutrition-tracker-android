@@ -2,12 +2,12 @@ package dev.masalimov.nutritiontracker.feature.diary
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -15,11 +15,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme
+import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
 import dev.masalimov.nutritiontracker.feature.diary.components.CaloriesCard
 import dev.masalimov.nutritiontracker.feature.diary.components.DateHeader
+import dev.masalimov.nutritiontracker.feature.diary.components.DateList
 import dev.masalimov.nutritiontracker.feature.diary.components.EatenFood
 import dev.masalimov.nutritiontracker.feature.diary.components.SuggestedFood
-import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 
 
@@ -30,17 +31,15 @@ object DiaryScreenRoute
 fun DiaryScreen(
     viewModel: DiaryViewModel = hiltViewModel(),
 ) {
-    LaunchedEffect(Unit) {
-        viewModel.onEvent(DiaryViewModel.DiaryEvent.LoadToday)
-    }
-    val uiState by viewModel.diaryUiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    DiaryContent(uiState)
+    DiaryContent(uiState, viewModel::onSelectDate)
 }
 
 @Composable
 private fun DiaryContent(
     uiState: DiaryUiState,
+    onDayClick: (DiaryDate) -> Unit = {},
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -53,7 +52,15 @@ private fun DiaryContent(
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             item(key = "date_header") {
-                DateHeader(uiState.date)
+                DateHeader(uiState.dateList.find { it.isSelected })
+            }
+
+            item(key = "date_list") {
+                DateList(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    uiState.dateList,
+                    onDayClick = onDayClick
+                )
             }
 
             item(key = "calories_card") {
@@ -82,7 +89,7 @@ private fun DiaryScreenPreview() {
         DiaryContent(
             uiState = DiaryUiState(
                 isLoading = false,
-                date = DateUiModel(LocalDate(2026, 3, 26)),
+                dateList = calendar,
                 eatenFoodList = listOf(
                     EatenFoodUiModel(
                         name = "Chicken breast",

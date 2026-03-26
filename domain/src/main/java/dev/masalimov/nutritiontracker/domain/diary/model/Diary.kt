@@ -1,4 +1,6 @@
-package dev.masalimov.nutritiontracker.domain
+package dev.masalimov.nutritiontracker.domain.diary.model
+
+import dev.masalimov.nutritiontracker.domain.food.Food
 
 
 @JvmInline

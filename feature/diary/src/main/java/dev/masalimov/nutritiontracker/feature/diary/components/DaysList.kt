@@ -11,33 +11,43 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme
+import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
+import dev.masalimov.nutritiontracker.feature.diary.DateUiModel
+import kotlinx.datetime.toJavaLocalDate
+import java.time.format.DateTimeFormatter
 
 
 @Composable
 fun DateList(
     modifier: Modifier = Modifier,
-    selectedDay: Int = 0,
-    onDayClick: (Int) -> Unit = {},
+    dateList: List<DateUiModel> = emptyList(),
+    onDayClick: (DiaryDate) -> Unit = {},
 ) {
     LazyRow(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(7) {
+        items(
+            items = dateList,
+            key = { it.date.date.toEpochDays() }
+        ) {
             DayButton(
-                day = it,
-                selected = it == selectedDay,
-                onClick = { onDayClick(it) }
+                date = it.date,
+                selected = it.isSelected,
+                onClick = { onDayClick(it.date) }
             )
         }
     }
@@ -45,11 +55,20 @@ fun DateList(
 
 @Composable
 fun DayButton(
-    day: Int,
+    date: DiaryDate,
     selected: Boolean,
     caloriesOver: Boolean = false,
     onClick: () -> Unit = {},
 ) {
+    val androidLocale = LocalConfiguration.current.locales[0]
+    val dayFormatter = remember(androidLocale) {
+        DateTimeFormatter.ofPattern("d").withLocale(androidLocale)
+    }
+    val monthFormatter = remember(androidLocale) {
+        DateTimeFormatter.ofPattern("MMM").withLocale(androidLocale)
+    }
+
+
     val surfaceColor = if (selected)
         MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
     else
@@ -72,12 +91,12 @@ fun DayButton(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = day.toString(),
+                text = date.date.toJavaLocalDate().format(dayFormatter),
                 style = MaterialTheme.typography.labelMedium,
                 color = textColor,
             )
             Text(
-                text = "Mar",
+                text = date.date.toJavaLocalDate().format(monthFormatter),
                 style = MaterialTheme.typography.labelSmall,
                 color = textColor,
             )
@@ -105,11 +124,11 @@ private fun DayButtonPreview() {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            DayButton(1, selected = false, caloriesOver = true)
-            DayButton(2, selected = false, caloriesOver = false)
-            DayButton(3, false)
-            DayButton(4, true)
-            DayButton(5, false)
+            DayButton(DiaryDate.today().previousDay(), selected = false, caloriesOver = true)
+            DayButton(DiaryDate.today(), selected = false, caloriesOver = false)
+            DayButton(DiaryDate.today().plusDays(1), false)
+            DayButton(DiaryDate.today().plusDays(2), true)
+            DayButton(DiaryDate.today().plusDays(3), false)
         }
     }
 }

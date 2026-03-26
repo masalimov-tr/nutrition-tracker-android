@@ -1,4 +1,4 @@
-package dev.masalimov.nutritiontracker.domain
+package dev.masalimov.nutritiontracker.domain.food
 
 data class Food(
     val id: FoodId,

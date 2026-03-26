@@ -25,7 +25,7 @@ internal fun DateHeader(
     if (date?.date != null) {
         Text(
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
-            text = date.date.toJavaLocalDate().format(formatter),
+            text = date.date.date.toJavaLocalDate().format(formatter),
             style = MaterialTheme.typography.displaySmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onPrimaryContainer,

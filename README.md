@@ -46,7 +46,7 @@ The project follows a modular, clean-ish architecture:
 
 - Domain (business rules)
   - Entities: `Diary`, `DiaryDate`, `Food`, `FoodId`, `GoalCalories`
-  - Use case: `GetDiaryForTodayUseCase`
+  - Use case: `GetDiaryStreamForDateUseCase`
   - Interfaces: `DiaryRepository`, `FoodRepository`
 - Data (implementation details)
   - Implements domain repositories using Room via `core/database`

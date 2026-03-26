@@ -24,8 +24,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme
-import dev.masalimov.nutritiontracker.core.ui.ShimmerBar
-import dev.masalimov.nutritiontracker.core.ui.ShimmerCircle
+import dev.masalimov.nutritiontracker.core.ui.components.ShimmerBar
+import dev.masalimov.nutritiontracker.core.ui.components.ShimmerCircle
 
 @Composable
 internal fun CaloriesCard(

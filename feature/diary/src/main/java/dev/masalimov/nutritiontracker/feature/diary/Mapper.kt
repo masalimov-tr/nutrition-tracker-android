@@ -1,7 +1,7 @@
 package dev.masalimov.nutritiontracker.feature.diary
 
-import dev.masalimov.nutritiontracker.domain.EatenFood
-import dev.masalimov.nutritiontracker.domain.Food
+import dev.masalimov.nutritiontracker.domain.diary.model.EatenFood
+import dev.masalimov.nutritiontracker.domain.food.Food
 
 internal fun EatenFood.toEatenFoodUiModel() = EatenFoodUiModel(
     name = this.food.name,
