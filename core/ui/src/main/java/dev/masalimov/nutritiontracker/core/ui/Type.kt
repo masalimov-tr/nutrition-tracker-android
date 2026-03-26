@@ -15,15 +15,14 @@ val poppinsFontFamily = FontFamily(
     androidx.compose.ui.text.font.Font(R.font.poppins_extrabold, FontWeight.ExtraBold),
 )
 
-// Inter: Clean, contemporary, excellent for body text
-val interFontFamily = FontFamily(
-    androidx.compose.ui.text.font.Font(R.font.inter_light, FontWeight.Light),
-    androidx.compose.ui.text.font.Font(R.font.inter_regular, FontWeight.Normal),
-    androidx.compose.ui.text.font.Font(R.font.inter_medium, FontWeight.Medium),
-    androidx.compose.ui.text.font.Font(R.font.inter_bold, FontWeight.Bold),
+val  charonFontFamily = FontFamily(
+    androidx.compose.ui.text.font.Font(R.font.iosevka_charon_light, FontWeight.Light),
+    androidx.compose.ui.text.font.Font(R.font.iosevka_charon_regular, FontWeight.Normal),
+    androidx.compose.ui.text.font.Font(R.font.iosevka_charon_medium, FontWeight.Medium),
+    androidx.compose.ui.text.font.Font(R.font.iosevka_charon_bold, FontWeight.Bold),
 )
 
-// Material 3 Typography with Poppins and Inter fonts
+// Material 3 Typography with Poppins and Funnel Sans fonts
 val Typography = Typography(
     displayLarge = TextStyle(
         fontFamily = poppinsFontFamily,
@@ -89,42 +88,42 @@ val Typography = Typography(
         letterSpacing = 0.1.sp
     ),
     bodyLarge = TextStyle(
-        fontFamily = interFontFamily,
+        fontFamily = charonFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp
     ),
     bodyMedium = TextStyle(
-        fontFamily = interFontFamily,
+        fontFamily = charonFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.25.sp
     ),
     bodySmall = TextStyle(
-        fontFamily = interFontFamily,
+        fontFamily = charonFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.4.sp
     ),
     labelLarge = TextStyle(
-        fontFamily = interFontFamily,
+        fontFamily = charonFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp
     ),
     labelMedium = TextStyle(
-        fontFamily = interFontFamily,
+        fontFamily = charonFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.5.sp
     ),
     labelSmall = TextStyle(
-        fontFamily = interFontFamily,
+        fontFamily = charonFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 11.sp,
         lineHeight = 16.sp,

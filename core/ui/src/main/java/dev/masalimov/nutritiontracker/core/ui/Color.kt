@@ -25,3 +25,6 @@ val OnSurfaceVariant = Color(0xFF6D6A5F) // warm gray
 
 // Additional
 val Outline = Color(0xFFDDD6C5) // light warm outline
+
+val Error = Color(0xFFBA1A1A) // red for errors
+val OnError = Color(0xFFFFFFFF) // white for error text

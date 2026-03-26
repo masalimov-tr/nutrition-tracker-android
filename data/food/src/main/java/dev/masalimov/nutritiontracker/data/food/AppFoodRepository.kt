@@ -5,7 +5,6 @@ import dev.masalimov.nutritiontracker.core.database.food.FoodEntity
 import dev.masalimov.nutritiontracker.domain.Food
 import dev.masalimov.nutritiontracker.domain.FoodId
 import dev.masalimov.nutritiontracker.domain.food.FoodRepository
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -26,7 +25,6 @@ internal class AppFoodRepository @Inject constructor(
     }
 
     override suspend fun getSuggestedFood(eatenFood: List<Food>): List<Food> {
-        delay(10000)
         val allFoods = foodDao.getAll()
         if (allFoods.isEmpty()) return emptyList()
         return allFoods.take(5).map(FoodEntity::toFood)

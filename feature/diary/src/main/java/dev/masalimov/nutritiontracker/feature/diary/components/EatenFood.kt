@@ -15,9 +15,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme
 import dev.masalimov.nutritiontracker.core.ui.ShimmerBar
-import dev.masalimov.nutritiontracker.core.ui.components.AppSurfaceCard
+import dev.masalimov.nutritiontracker.core.ui.components.AppCard
 import dev.masalimov.nutritiontracker.feature.diary.EatenFoodUiModel
 
 @Composable
@@ -29,8 +31,8 @@ internal fun EatenFood(
         Text(
             text = "Today's meals",
             style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.Companion.padding(bottom = 8.dp)
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            modifier = Modifier.padding(bottom = 16.dp)
         )
         if (isLoading) {
             Column(
@@ -47,7 +49,7 @@ internal fun EatenFood(
                 text = "No meals added yet",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.Companion.padding(vertical = 8.dp)
+                modifier = Modifier.padding(vertical = 8.dp)
             )
             return
         }
@@ -63,40 +65,53 @@ internal fun EatenFood(
 }
 
 
-
 @Composable
 private fun DiaryListItem(item: EatenFoodUiModel) {
-    AppSurfaceCard(
-        modifier = Modifier.fillMaxWidth(),
-    ) {
+    DiaryItemCard {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.Top,
         ) {
-            Text(
-                text = item.name,
-                style = MaterialTheme.typography.bodyLarge,
+            Column(
                 modifier = Modifier.weight(1f),
-            )
-            val calories = item.caloriesPer100g
-            Text(
-                text = "$calories kcal/100g",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            ) {
+                Text(
+                    text = item.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                val calories = item.caloriesPer100g
+                Text(
+                    text = "$calories kcal / 100g",
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            }
+            Column(
+                horizontalAlignment = Alignment.End,
+            ) {
+                Text(
+                    text = "${item.caloriesEaten} kkal",
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "${item.quantityGram.toInt()} g",
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            }
+
         }
     }
 }
 
-
-
 @Composable
 private fun DiaryListItemPlaceholder() {
-    AppSurfaceCard(
-        modifier = Modifier.fillMaxWidth(),
-    ) {
+    val shimmerColor = MaterialTheme.colorScheme.onSurfaceVariant
+    DiaryItemCard {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -108,23 +123,101 @@ private fun DiaryListItemPlaceholder() {
                     modifier = Modifier
                         .height(20.dp)
                         .fillMaxWidth(0.6f)
-                        .clip(RoundedCornerShape(6.dp))
+                        .clip(RoundedCornerShape(6.dp)),
+                    shimmerColor = shimmerColor
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 ShimmerBar(
                     modifier = Modifier
                         .height(14.dp)
                         .fillMaxWidth(0.4f)
-                        .clip(RoundedCornerShape(6.dp))
+                        .clip(RoundedCornerShape(6.dp)),
+                    shimmerColor = shimmerColor
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))
-            ShimmerBar(
-                modifier = Modifier
-                    .height(16.dp)
-                    .width(110.dp)
-                    .clip(RoundedCornerShape(6.dp))
-            )
+            Column(
+                horizontalAlignment = Alignment.End,
+            ) {
+                ShimmerBar(
+                    modifier = Modifier
+                        .height(16.dp)
+                        .width(50.dp)
+                        .clip(RoundedCornerShape(6.dp)),
+                    shimmerColor = shimmerColor
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                ShimmerBar(
+                    modifier = Modifier
+                        .height(16.dp)
+                        .width(110.dp)
+                        .clip(RoundedCornerShape(6.dp)),
+                    shimmerColor = shimmerColor
+                )
+            }
         }
+    }
+}
+
+@Composable
+private fun DiaryItemCard(
+    content: @Composable () -> Unit,
+) {
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        cornerRadius = 12.dp,
+        borderStroke = null,
+    ) {
+        content()
+    }
+}
+
+@androidx.compose.ui.tooling.preview.Preview(name = "EatenFood - Sample", showBackground = true)
+@Composable
+private fun PreviewEatenFood() {
+    NutritionTrackerTheme {
+        EatenFood(
+            eatenFood = listOf(
+                EatenFoodUiModel(
+                    name = "Apple",
+                    quantityGram = 150.0,
+                    caloriesEaten = 78,
+                    caloriesPer100g = 52,
+                ),
+                EatenFoodUiModel(
+                    name = "Grilled Chicken Breast",
+                    quantityGram = 200.0,
+                    caloriesEaten = 330,
+                    caloriesPer100g = 165,
+                ),
+                EatenFoodUiModel(
+                    name = "Greek Yogurt",
+                    quantityGram = 100.0,
+                    caloriesEaten = 59,
+                    caloriesPer100g = 59,
+                ),
+                EatenFoodUiModel(
+                    name = "Lorem ipsum dolor sit amet lorem ipsum dolor sit amet",
+                    quantityGram = 100.0,
+                    caloriesEaten = 59,
+                    caloriesPer100g = 59,
+                ),
+            ),
+            isLoading = false,
+        )
+    }
+}
+
+@androidx.compose.ui.tooling.preview.Preview(name = "EatenFood - Loading", showBackground = true)
+@Composable
+private fun PreviewEatenFoodLoading() {
+    NutritionTrackerTheme {
+        EatenFood(
+            eatenFood = emptyList(),
+            isLoading = true,
+        )
     }
 }

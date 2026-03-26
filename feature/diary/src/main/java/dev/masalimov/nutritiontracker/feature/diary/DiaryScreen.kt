@@ -10,13 +10,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme
 import dev.masalimov.nutritiontracker.feature.diary.components.CaloriesCard
 import dev.masalimov.nutritiontracker.feature.diary.components.DateHeader
 import dev.masalimov.nutritiontracker.feature.diary.components.EatenFood
 import dev.masalimov.nutritiontracker.feature.diary.components.SuggestedFood
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 
 
@@ -68,5 +71,46 @@ private fun DiaryContent(
                 SuggestedFood(uiState.suggestedFoodList)
             }
         }
+    }
+}
+
+
+@Preview(showBackground = true, name = "Diary Screen")
+@Composable
+private fun DiaryScreenPreview() {
+    NutritionTrackerTheme {
+        DiaryContent(
+            uiState = DiaryUiState(
+                isLoading = false,
+                date = DateUiModel(LocalDate(2026, 3, 26)),
+                eatenFoodList = listOf(
+                    EatenFoodUiModel(
+                        name = "Chicken breast",
+                        quantityGram = 150.0,
+                        caloriesEaten = 240,
+                        caloriesPer100g = 160
+                    ),
+                    EatenFoodUiModel(
+                        name = "Greek yogurt",
+                        quantityGram = 200.0,
+                        caloriesEaten = 120,
+                        caloriesPer100g = 60
+                    ),
+                    EatenFoodUiModel(
+                        name = "Avocado toast",
+                        quantityGram = 120.0,
+                        caloriesEaten = 280,
+                        caloriesPer100g = 233
+                    )
+                ),
+                suggestedFoodList = listOf(
+                    SuggestedFoodUiModel(name = "Apple", caloriesPer100g = 52.0),
+                    SuggestedFoodUiModel(name = "Cottage cheese", caloriesPer100g = 98.0),
+                    SuggestedFoodUiModel(name = "Oatmeal", caloriesPer100g = 68.0),
+                ),
+                caloriesEatenTotal = 640,
+                goalCaloriesPerDay = 2000,
+            )
+        )
     }
 }

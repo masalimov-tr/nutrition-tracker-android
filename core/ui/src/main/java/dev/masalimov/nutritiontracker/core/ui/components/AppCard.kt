@@ -7,45 +7,28 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-/**
- * Simple rounded card with subtle blue-tinted container used across the app.
- */
-@Composable
-fun AppPrimaryCard(
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit,
-) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        content()
-    }
-}
 
-/**
- * Neutral white surface card. Useful for list items.
- */
 @Composable
-fun AppSurfaceCard(
+fun AppCard(
     modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.surface,
+    contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    cornerRadius : Dp = 20.dp,
+    borderStroke: BorderStroke? = BorderStroke(1.dp, contentColor.copy(alpha = 0.12f)),
     content: @Composable () -> Unit,
 ) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(cornerRadius),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface,
+            containerColor = containerColor,
+            contentColor = contentColor,
         ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)),
+        border = borderStroke,
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         content()
