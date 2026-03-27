@@ -39,3 +39,10 @@ data class SuggestedFoodUiModel(
     val name: String,
     val caloriesPer100g: Double? = null,
 )
+
+sealed interface AddFoodUiState {
+    object Idle : AddFoodUiState
+    object Loading : AddFoodUiState
+    object Success : AddFoodUiState
+    object Error : AddFoodUiState
+}

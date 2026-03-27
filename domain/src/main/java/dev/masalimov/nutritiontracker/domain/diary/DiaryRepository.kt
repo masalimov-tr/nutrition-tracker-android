@@ -8,4 +8,6 @@ interface DiaryRepository {
     fun getDiaryByDateFlow(date: DiaryDate) : Flow<Diary?>
 
     fun getAllDiaryEntriesFlow(): Flow<List<Diary>>
+
+    suspend fun addFoodToDiary(foodId: Long, date: DiaryDate, quantityGrams: Double)
 }

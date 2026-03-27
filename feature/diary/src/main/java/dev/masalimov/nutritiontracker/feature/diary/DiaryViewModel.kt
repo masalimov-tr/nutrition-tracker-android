@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.masalimov.nutritiontracker.domain.GoalCalories
 import dev.masalimov.nutritiontracker.domain.diary.CalorieConsumptionStatus
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
+import dev.masalimov.nutritiontracker.domain.diary.usecase.AddFoodToDiaryUseCase
 import dev.masalimov.nutritiontracker.domain.diary.usecase.GetCaloriesConsumptionPerDateUseCase
 import dev.masalimov.nutritiontracker.domain.diary.usecase.GetDiaryStreamForDateUseCase
 import dev.masalimov.nutritiontracker.domain.food.Food
@@ -14,12 +15,14 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
@@ -27,10 +30,13 @@ import javax.inject.Inject
 class DiaryViewModel @Inject constructor(
     private val getCaloriesConsumptionPerDateUseCase: GetCaloriesConsumptionPerDateUseCase,
     private val getDiaryStreamForDateUseCase: GetDiaryStreamForDateUseCase,
+    private val addFoodToDiaryUseCase: AddFoodToDiaryUseCase,
     private val goalCalories: GoalCalories,
 ) : ViewModel() {
 
     private val _selectedDate = MutableStateFlow(DiaryDate.today())
+    private val _addFoodUiState: MutableStateFlow<AddFoodUiState> = MutableStateFlow(AddFoodUiState.Idle)
+    val addFoodUiState: StateFlow<AddFoodUiState> = _addFoodUiState.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<DiaryUiState> = _selectedDate
@@ -70,6 +76,23 @@ class DiaryViewModel @Inject constructor(
 
     fun onSelectDate(date: DiaryDate) {
         _selectedDate.value = date
+    }
+
+    fun addFoodToDiary(foodIdToAdd: Long, quantityGrams: Double = 100.0) {
+        viewModelScope.launch {
+            _addFoodUiState.value = AddFoodUiState.Loading
+            try {
+                addFoodToDiaryUseCase(foodIdToAdd, _selectedDate.value, quantityGrams)
+                _addFoodUiState.value = AddFoodUiState.Success
+            } catch (e: Exception) {
+                _addFoodUiState.value = AddFoodUiState.Error
+                return@launch
+            }
+        }
+    }
+
+    fun addFoodErrorShowed() {
+        _addFoodUiState.value = AddFoodUiState.Idle
     }
 
 }

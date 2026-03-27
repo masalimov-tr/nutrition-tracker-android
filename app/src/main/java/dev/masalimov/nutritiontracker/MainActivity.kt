@@ -10,6 +10,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -49,11 +50,17 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .then(Modifier.padding(innerPadding))
                     ) {
-                        diaryScreen(onLogFoodClick = {
-                            diaryBottomSheetState.open()
-                        })
-                        foodListScreen(onItemClick = {
-                            navController.navigateToFoodDetail(it)
+                        val foodIdToAdd =
+                            navController.currentBackStackEntry?.savedStateHandle?.get<Long>(
+                                FOOD_ID_TO_ADD_NAVIGATION_ARG_KEY
+                            )
+                        diaryScreen(
+                            foodIdToAdd = foodIdToAdd,
+                            onLogFoodClick = {
+                                diaryBottomSheetState.open()
+                            })
+                        foodListScreen(onItemClick = { foodId ->
+                            navController.navigateToFoodDetail(foodId)
                         })
                         foodDetailsScreen()
                     }
@@ -65,12 +72,15 @@ class MainActivity : ComponentActivity() {
                         sheetState = diaryBottomSheetState.sheetState,
                         containerColor = MaterialTheme.colorScheme.background,
                     ) {
-                        val foodVm: FoodViewModel = hiltViewModel()
+                        val viewModel: FoodViewModel = hiltViewModel()
                         FoodListScreen(
-                            viewModel = foodVm,
-                            onItemClick = { id ->
+                            viewModel = viewModel,
+                            onItemClick = { foodId ->
                                 diaryBottomSheetState.close()
-                                navController.navigateToFoodDetail(id)
+                                navController.setNavigationArguments(
+                                    foodId,
+                                    FOOD_ID_TO_ADD_NAVIGATION_ARG_KEY
+                                )
                             }
                         )
                     }
@@ -80,11 +90,18 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+const val FOOD_ID_TO_ADD_NAVIGATION_ARG_KEY = "foodIdToAdd"
 fun NavGraphBuilder.diaryScreen(
+    foodIdToAdd: Long? = null,
     onLogFoodClick: () -> Unit = {},
 ) {
     composable<DiaryScreenRoute> {
         val viewModel: DiaryViewModel = hiltViewModel()
+        LaunchedEffect(foodIdToAdd) {
+            if (foodIdToAdd != null) {
+                viewModel.addFoodToDiary(foodIdToAdd)
+            }
+        }
         DiaryScreen(viewModel, onLogFoodClick)
     }
 }
@@ -101,8 +118,10 @@ fun NavGraphBuilder.foodListScreen(
         )
     }
 }
-fun NavController.navigateToFoodList() {
-    navigate(FoodListRoute)
+
+fun <T> NavController.setNavigationArguments(args: T, key: String) {
+    currentBackStackEntry?.savedStateHandle?.set(key, args)
+//    popBackStack()
 }
 
 fun NavController.navigateToFoodDetail(foodId: Long) {

@@ -1,18 +1,27 @@
 package dev.masalimov.nutritiontracker.feature.diary
 
+import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -35,24 +44,41 @@ fun DiaryScreen(
     viewModel: DiaryViewModel = hiltViewModel(),
     onLogFoodClick: () -> Unit = {},
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
-    DiaryContent(uiState, onDayClick = viewModel::onSelectDate, onLogFoodClick = onLogFoodClick)
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val addFoodUiState by viewModel.addFoodUiState.collectAsStateWithLifecycle()
+    if (addFoodUiState is AddFoodUiState.Error) {
+        LaunchedEffect(Unit) {
+            Toast.makeText(
+                context, "Failed to add food", Toast.LENGTH_LONG
+            ).show()
+            viewModel.addFoodErrorShowed()
+        }
+    }
+    DiaryContent(
+        uiState,
+        addFoodUiState,
+        onDayClick = viewModel::onSelectDate,
+        onLogFoodClick = onLogFoodClick
+    )
 }
 
 @Composable
 private fun DiaryContent(
     uiState: DiaryUiState,
+    addFoodUiState: AddFoodUiState,
     onDayClick: (DiaryDate) -> Unit = {},
     onLogFoodClick: () -> Unit = {},
 ) {
     Scaffold(
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = onLogFoodClick
-            ) {
-                Text("Log food")
-            }
+            if (addFoodUiState !is AddFoodUiState.Loading)
+                ExtendedFloatingActionButton(
+                    onClick = onLogFoodClick
+                ) {
+                    Text("Log food")
+                }
         }
     ) { innerPadding ->
         Surface(
@@ -99,46 +125,100 @@ private fun DiaryContent(
                 }
             }
         }
+        if (addFoodUiState is AddFoodUiState.Loading) {
+            AddFoodLoading()
+        }
     }
 }
 
+@Composable
+private fun AddFoodLoading() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.8f)
+            )
+            .clickable(enabled = false) {},
+        contentAlignment = androidx.compose.ui.Alignment.Center
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+        ) {
+            Text("Adding food...", style = MaterialTheme.typography.headlineMedium)
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .padding(start = 16.dp)
+                    .size(24.dp)
+            )
+        }
+    }
+}
+
+private val diaryUiStatePreview = DiaryUiState(
+    isLoading = false,
+    dateList = calendar,
+    eatenFoodList = listOf(
+        EatenFoodUiModel(
+            name = "Chicken breast",
+            quantityGram = 150.0,
+            caloriesEaten = 240,
+            caloriesPer100g = 160
+        ),
+        EatenFoodUiModel(
+            name = "Greek yogurt",
+            quantityGram = 200.0,
+            caloriesEaten = 120,
+            caloriesPer100g = 60
+        ),
+        EatenFoodUiModel(
+            name = "Avocado toast",
+            quantityGram = 120.0,
+            caloriesEaten = 280,
+            caloriesPer100g = 233
+        )
+    ),
+    suggestedFoodList = listOf(
+        SuggestedFoodUiModel(name = "Apple", caloriesPer100g = 52.0),
+        SuggestedFoodUiModel(name = "Cottage cheese", caloriesPer100g = 98.0),
+        SuggestedFoodUiModel(name = "Oatmeal", caloriesPer100g = 68.0),
+    ),
+    caloriesEatenTotal = 640,
+    goalCaloriesPerDay = 2000,
+)
 
 @Preview(showBackground = true, name = "Diary Screen")
 @Composable
 private fun DiaryScreenPreview() {
     NutritionTrackerTheme {
         DiaryContent(
-            uiState = DiaryUiState(
-                isLoading = false,
-                dateList = calendar,
-                eatenFoodList = listOf(
-                    EatenFoodUiModel(
-                        name = "Chicken breast",
-                        quantityGram = 150.0,
-                        caloriesEaten = 240,
-                        caloriesPer100g = 160
-                    ),
-                    EatenFoodUiModel(
-                        name = "Greek yogurt",
-                        quantityGram = 200.0,
-                        caloriesEaten = 120,
-                        caloriesPer100g = 60
-                    ),
-                    EatenFoodUiModel(
-                        name = "Avocado toast",
-                        quantityGram = 120.0,
-                        caloriesEaten = 280,
-                        caloriesPer100g = 233
-                    )
-                ),
-                suggestedFoodList = listOf(
-                    SuggestedFoodUiModel(name = "Apple", caloriesPer100g = 52.0),
-                    SuggestedFoodUiModel(name = "Cottage cheese", caloriesPer100g = 98.0),
-                    SuggestedFoodUiModel(name = "Oatmeal", caloriesPer100g = 68.0),
-                ),
-                caloriesEatenTotal = 640,
-                goalCaloriesPerDay = 2000,
-            )
+            addFoodUiState = AddFoodUiState.Idle,
+            uiState = diaryUiStatePreview
+        )
+    }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+private fun DiaryScreenLoadingPreview() {
+    NutritionTrackerTheme {
+        DiaryContent(
+            addFoodUiState = AddFoodUiState.Loading,
+            uiState = diaryUiStatePreview
+        )
+    }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+private fun DiaryScreenErrorPreview() {
+    NutritionTrackerTheme {
+        DiaryContent(
+            addFoodUiState = AddFoodUiState.Error,
+            uiState = diaryUiStatePreview
         )
     }
 }
