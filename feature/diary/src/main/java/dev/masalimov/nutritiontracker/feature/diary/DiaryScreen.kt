@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -25,8 +24,6 @@ import dev.masalimov.nutritiontracker.feature.diary.components.DateHeader
 import dev.masalimov.nutritiontracker.feature.diary.components.DateList
 import dev.masalimov.nutritiontracker.feature.diary.components.EatenFood
 import dev.masalimov.nutritiontracker.feature.diary.components.SuggestedFood
-import dev.masalimov.nutritiontracker.feature.food.list.FoodListScreen
-import dev.masalimov.nutritiontracker.feature.food.list.FoodViewModel
 import kotlinx.serialization.Serializable
 
 
@@ -36,24 +33,23 @@ object DiaryScreenRoute
 @Composable
 fun DiaryScreen(
     viewModel: DiaryViewModel = hiltViewModel(),
+    onLogFoodClick: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    DiaryContent(uiState, viewModel::onSelectDate)
+    DiaryContent(uiState, onDayClick = viewModel::onSelectDate, onLogFoodClick = onLogFoodClick)
 }
 
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 private fun DiaryContent(
     uiState: DiaryUiState,
     onDayClick: (DiaryDate) -> Unit = {},
+    onLogFoodClick: () -> Unit = {},
 ) {
-    val diaryBottomSheetState = rememberDiaryBottomSheetState()
-
     Scaffold(
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick = { diaryBottomSheetState.open() }
+                onClick = onLogFoodClick
             ) {
                 Text("Log food")
             }
@@ -101,20 +97,6 @@ private fun DiaryContent(
                 item(key = "suggested_food_section") {
                     SuggestedFood(uiState.suggestedFoodList)
                 }
-            }
-        }
-
-        if (diaryBottomSheetState.isExtended) {
-            ModalBottomSheet(
-                onDismissRequest = { diaryBottomSheetState.close() },
-                sheetState = diaryBottomSheetState.sheetState,
-                containerColor = MaterialTheme.colorScheme.background,
-            ) {
-                val foodVm: FoodViewModel = hiltViewModel()
-                FoodListScreen(
-                    viewModel = foodVm,
-                    onItemClick = { _ -> diaryBottomSheetState.close() }
-                )
             }
         }
     }
