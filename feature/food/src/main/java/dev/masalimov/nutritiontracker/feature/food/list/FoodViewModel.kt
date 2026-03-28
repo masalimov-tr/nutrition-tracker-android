@@ -25,18 +25,19 @@ data class FoodUiModel(
     val caloriesPer100g: Double,
 )
 
-data class FoodListUiState(
-    val foodList: List<FoodUiModel>,
-    val isLoading: Boolean,
-    val errorMessage: String? = null,
+sealed class FoodListAsync(
+    open val foodList: List<FoodUiModel> = emptyList()
 ) {
-    companion object {
-        fun empty() = FoodListUiState(
-            foodList = emptyList(),
-            isLoading = false,
-        )
-    }
+    data object Initial : FoodListAsync()
+    data class Loading(val list: List<FoodUiModel>) : FoodListAsync(list)
+
+    data class Success(val list: List<FoodUiModel>) : FoodListAsync(list)
 }
+
+data class FoodListUiState(
+    val foodListAsync: FoodListAsync = FoodListAsync.Initial,
+    val errorMessage: String? = null,
+)
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
@@ -49,28 +50,34 @@ class FoodViewModel @Inject constructor(
     val uiState: StateFlow<FoodListUiState> = _foodQuery
         .map { it.trim() }
         .distinctUntilChanged()
-        .transformLatest {
-            if (it.isEmpty()) {
-                emit(FoodListUiState.empty())
-            } else {
-                emit(uiState.value.copy(isLoading = true, errorMessage = null))
-
-                if (it.isNotEmpty())
-                    delay(300) // debounce
-
-                try {
-                    val foundFood = foodRepository.searchFood(it).map { it.toUiModel() }
-                    emit(uiState.value.copy(foodList = foundFood, isLoading = false))
-                } catch (e: Throwable) {
-                    val errorMessage = if (e is FoodSearchException) e.errorMessage else null
-                    emit(uiState.value.copy(isLoading = false, errorMessage = errorMessage))
-                }
+        .transformLatest { query ->
+            if (query.isEmpty()) {
+                emit(FoodListUiState(FoodListAsync.Initial))
+                return@transformLatest
             }
+
+            emit(FoodListUiState(FoodListAsync.Loading(
+                uiState.value.foodListAsync.foodList
+            )))
+
+            if (query.isNotEmpty())
+                delay(300) // debounce
+
+            try {
+                val foundFood = foodRepository.searchFood(query).map { it.toUiModel() }
+                emit(FoodListUiState(FoodListAsync.Success(foundFood)))
+            } catch (e: Throwable) {
+                val errorMessage = if (e is FoodSearchException) e.errorMessage else null
+                emit(FoodListUiState(FoodListAsync.Success(
+                    uiState.value.foodListAsync.foodList
+                ), errorMessage))
+            }
+
         }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = FoodListUiState.empty()
+            initialValue = FoodListUiState(FoodListAsync.Initial)
         )
 
     fun onQueryChanged(query: String) {
