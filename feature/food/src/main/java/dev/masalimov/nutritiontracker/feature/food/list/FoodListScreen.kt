@@ -1,5 +1,6 @@
 package dev.masalimov.nutritiontracker.feature.food.list
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -8,12 +9,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,14 +39,15 @@ fun FoodListScreen(
     onItemClick: (Long) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    FoodListContent(modifier, uiState, onItemClick)
+    FoodListContent(modifier, uiState, onItemClick, viewModel::onQueryChanged)
 }
 
 @Composable
 private fun FoodListContent(
     modifier: Modifier = Modifier,
-    foodModels: List<FoodUiModel>,
+    uiState: FoodListUiState,
     onItemClick: (Long) -> Unit = {},
+    onQueryChanged: (String) -> Unit = {},
 ) {
     Surface(
         modifier = modifier
@@ -52,14 +58,40 @@ private fun FoodListContent(
             modifier = modifier.fillMaxWidth(),
             contentPadding = PaddingValues(16.dp),
         ) {
-            foodModels.forEachIndexed { index, item ->
+            item {
+                var query by rememberSaveable { mutableStateOf("") }
+                BasicTextField(
+                    value = query,
+                    onValueChange = {
+                        query = it
+                        onQueryChanged(it)
+                    },
+                    decorationBox = { innerTextField ->
+                        Column(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            Text(
+                                text = "Search food",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            innerTextField()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+            uiState.foodList.forEachIndexed { index, item ->
                 item(key = item.id) {
                     FoodListItem(
                         modifier = Modifier.fillMaxWidth(),
                         item = item,
                         onClick = { onItemClick(item.id) },
                     )
-                    if (index != foodModels.lastIndex) {
+                    if (index != uiState.foodList.lastIndex) {
                         HorizontalDivider(
                             thickness = 1.dp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
@@ -121,6 +153,6 @@ private fun FoodListScreenPreview() {
         FoodUiModel(8, "Orange", 47.0),
     )
     NutritionTrackerTheme {
-        FoodListContent(foodModels = previewItems)
+        FoodListContent(uiState = FoodListUiState(previewItems))
     }
 }

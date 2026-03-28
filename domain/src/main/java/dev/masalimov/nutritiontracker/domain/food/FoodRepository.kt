@@ -11,4 +11,6 @@ interface FoodRepository {
     suspend fun getFoodById(foodId: FoodId): Food
 
     suspend fun getSuggestedFood(eatenFood: List<Food>): List<Food>
+
+    suspend fun searchFood(query: String): List<Food>
 }

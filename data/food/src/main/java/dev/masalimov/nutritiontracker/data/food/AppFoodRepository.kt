@@ -11,7 +11,9 @@ import javax.inject.Inject
 
 internal class AppFoodRepository @Inject constructor(
     private val foodDao: FoodDao,
+    private val foodRemoteDataSource: FoodRemoteDataSource,
 ) : FoodRepository {
+
     override suspend fun getAllFood(): List<Food> {
         return foodDao.getAll().map(FoodEntity::toFood)
     }
@@ -29,6 +31,22 @@ internal class AppFoodRepository @Inject constructor(
         if (allFoods.isEmpty()) return emptyList()
         return allFoods.take(5).map(FoodEntity::toFood)
     }
+
+    override suspend fun searchFood(query: String): List<Food> {
+        return foodRemoteDataSource.searchFood(query).map(FoodApiModel::toFood)
+    }
+}
+
+fun FoodApiModel.toFood(): Food {
+    return Food(
+        id = FoodId(id),
+        name = name,
+        caloriesPer100g = caloriesPer100g,
+        proteinPer100g = 0.0,
+        fatPer100g = 0.0,
+        carbsPer100g = 0.0,
+    )
+
 }
 
 fun FoodEntity.toFood(): Food {
