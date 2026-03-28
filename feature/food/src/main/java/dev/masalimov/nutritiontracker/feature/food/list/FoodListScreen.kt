@@ -1,6 +1,5 @@
 package dev.masalimov.nutritiontracker.feature.food.list
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -9,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -26,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme
 import dev.masalimov.nutritiontracker.core.ui.components.AppCard
+import dev.masalimov.nutritiontracker.core.ui.components.AppSearchBar
 import kotlinx.serialization.Serializable
 
 
@@ -48,7 +47,10 @@ private fun FoodListContent(
     uiState: FoodListUiState,
     onItemClick: (Long) -> Unit = {},
     onQueryChanged: (String) -> Unit = {},
+    query: String = "",
 ) {
+    var query by rememberSaveable { mutableStateOf(query) }
+
     Surface(
         modifier = modifier
             .fillMaxSize(),
@@ -59,48 +61,52 @@ private fun FoodListContent(
             contentPadding = PaddingValues(16.dp),
         ) {
             item {
-                var query by rememberSaveable { mutableStateOf("") }
-                BasicTextField(
-                    value = query,
-                    onValueChange = {
+                AppSearchBar(
+                    query = query,
+                    onQueryChange = {
                         query = it
                         onQueryChanged(it)
                     },
-                    decorationBox = { innerTextField ->
-                        Column(
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                        ) {
-                            Text(
-                                text = "Search food",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            innerTextField()
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
+                    isLoading = uiState.isLoading,
+                    errorMessage = uiState.errorMessage,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
                 )
             }
-            uiState.foodList.forEachIndexed { index, item ->
-                item(key = item.id) {
-                    FoodListItem(
-                        modifier = Modifier.fillMaxWidth(),
-                        item = item,
-                        onClick = { onItemClick(item.id) },
+            if (query.isNotEmpty() && uiState.foodList.isEmpty())
+                item {
+                    EmptyListPlaceholder(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(8.dp)
                     )
-                    if (index != uiState.foodList.lastIndex) {
-                        HorizontalDivider(
-                            thickness = 1.dp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                }
+            else
+                uiState.foodList.forEachIndexed { index, item ->
+                    item(key = item.id) {
+                        FoodListItem(
+                            modifier = Modifier.fillMaxWidth(),
+                            item = item,
+                            onClick = { onItemClick(item.id) },
                         )
+                        if (index != uiState.foodList.lastIndex) {
+                            HorizontalDivider(
+                                thickness = 1.dp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                            )
+                        }
                     }
                 }
-            }
         }
     }
+}
+
+@Composable
+private fun EmptyListPlaceholder(
+    modifier: Modifier = Modifier
+) {
+    Text(modifier = modifier, text = "No food found")
 }
 
 @Composable
@@ -139,6 +145,14 @@ private fun FoodListItem(
     }
 }
 
+@Preview
+@Composable
+private fun Empty() {
+    NutritionTrackerTheme {
+        FoodListContent(uiState = FoodListUiState.empty(), query = "App")
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun FoodListScreenPreview() {
@@ -153,6 +167,6 @@ private fun FoodListScreenPreview() {
         FoodUiModel(8, "Orange", 47.0),
     )
     NutritionTrackerTheme {
-        FoodListContent(uiState = FoodListUiState(previewItems))
+        FoodListContent(uiState = FoodListUiState(previewItems, false))
     }
 }
