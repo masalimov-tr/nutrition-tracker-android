@@ -2,7 +2,7 @@ package dev.masalimov.nutritiontracker.core.database
 
 import dev.masalimov.nutritiontracker.core.database.food.FoodEntity
 
-object PrepopulationData {
+internal object PrepopulationData {
     val prepopulatedFoods = listOf(
         // Keep original 10 items
         FoodEntity(

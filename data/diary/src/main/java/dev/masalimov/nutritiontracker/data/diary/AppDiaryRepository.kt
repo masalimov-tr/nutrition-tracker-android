@@ -11,9 +11,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-fun DiaryDate.toEpochDay(): Int {
-    return date.toEpochDays()
-}
 
 internal class AppDiaryRepository @Inject constructor(
     private val diaryDao: DiaryDao,
@@ -34,7 +31,6 @@ internal class AppDiaryRepository @Inject constructor(
     }
 
     override suspend fun addFoodToDiary(foodId: Long, date: DiaryDate, quantityGrams: Double) {
-//        delay(2000)
         val result = diaryDao.getDiaryForDate(date.toEpochDay())
         val diaryEntryId = result?.diaryEntry?.uid ?: run {
             diaryDao.insert(

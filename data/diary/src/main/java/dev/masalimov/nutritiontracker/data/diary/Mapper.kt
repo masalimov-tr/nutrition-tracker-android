@@ -33,3 +33,7 @@ private fun FoodEntity.toFood(): Food {
         carbsPer100g = carbsPer100g,
     )
 }
+
+internal fun DiaryDate.toEpochDay(): Int {
+    return date.toEpochDays()
+}

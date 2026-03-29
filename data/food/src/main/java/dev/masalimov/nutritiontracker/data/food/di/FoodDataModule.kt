@@ -12,13 +12,13 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class FoodDataModule {
+internal abstract class FoodDataModule {
 
     @Binds
     @Singleton
-    internal abstract fun bindFoodRepository(impl: AppFoodRepository): FoodRepository
+    abstract fun bindFoodRepository(impl: AppFoodRepository): FoodRepository
 
     @Binds
     @Singleton
-    internal abstract fun bindFoodApi(impl: FoodApiFakeImpl): FoodApi
+    abstract fun bindFoodApi(impl: FoodApiFakeImpl): FoodApi
 }

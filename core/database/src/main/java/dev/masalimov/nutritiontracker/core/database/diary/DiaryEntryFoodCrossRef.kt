@@ -26,6 +26,7 @@ import dev.masalimov.nutritiontracker.core.database.food.FoodEntity
         Index(value = ["foodId"]) // for joins
     ],
 )
+
 data class DiaryEntryFoodCrossRef(
     val diaryEntryId: Long,
     val foodId: Long,

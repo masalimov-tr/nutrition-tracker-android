@@ -10,7 +10,7 @@ import javax.inject.Provider
 import javax.inject.Singleton
 
 @Singleton
-class PrepopulateCallback @Inject constructor(
+internal class PrepopulateCallback @Inject constructor(
     @ApplicationScope private val appScope: CoroutineScope,
     private val seederProvider: Provider<DatabaseSeeder>,
 ) : RoomDatabase.Callback() {

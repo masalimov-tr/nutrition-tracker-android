@@ -19,14 +19,14 @@ import javax.inject.Singleton
 
 
 @Singleton
-class DatabaseSeeder @Inject constructor(
+internal class DatabaseSeeder @Inject constructor(
     private val db: NutritionAppDatabase,
     private val foodDao: FoodDao,
     private val diaryDao: DiaryDao,
 ) {
 
 
-    suspend fun seedIfEmpty() = withContext(Dispatchers.IO) {
+    internal suspend fun seedIfEmpty() = withContext(Dispatchers.IO) {
         db.withTransaction {
             if (foodDao.countAll() > 0) return@withTransaction
             val foods = PrepopulationData.prepopulatedFoods

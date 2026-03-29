@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
 
-class FoodApiFakeImpl @Inject constructor(): FoodApi {
+internal class FoodApiFakeImpl @Inject constructor(): FoodApi {
     private val apiFood = listOf(
         FoodApiModel(1, "Apple From Api", 52.0),
         FoodApiModel(2, "Banana From Api", 96.0),
@@ -23,12 +23,12 @@ class FoodApiFakeImpl @Inject constructor(): FoodApi {
     }
 
 }
-data class FoodApiModel(
+internal data class FoodApiModel(
     val id: Long,
     val name: String,
     val caloriesPer100g: Double,
 )
 
-interface FoodApi {
+internal interface FoodApi {
     suspend fun searchFood(query: String): List<FoodApiModel>
 }
