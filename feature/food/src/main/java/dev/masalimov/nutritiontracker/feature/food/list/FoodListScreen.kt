@@ -67,14 +67,14 @@ private fun FoodListContent(
                         query = it
                         onQueryChanged(it)
                     },
-                    isLoading = uiState.foodListAsync is FoodListAsync.Loading,
-                    errorMessage = uiState.errorMessage,
+                    isLoading = uiState is FoodListUiState.Loading,
+                    errorMessage = (uiState as? FoodListUiState.Error)?.errorMessage,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 8.dp),
                 )
             }
-            if (uiState.foodListAsync is FoodListAsync.Success && uiState.foodListAsync.foodList.isEmpty()) {
+            if (uiState is FoodListUiState.Success && uiState.foodList.isEmpty()) {
                 item {
                     NotFoundState(
                         modifier = Modifier
@@ -84,7 +84,7 @@ private fun FoodListContent(
                 }
             }
 
-            if (uiState.foodListAsync is FoodListAsync.Initial) {
+            if (uiState is FoodListUiState.Initial) {
                 item {
                     EmptyState(
                         modifier = Modifier
@@ -93,14 +93,14 @@ private fun FoodListContent(
                     )
                 }
             }
-            uiState.foodListAsync.foodList.forEachIndexed { index, item ->
+            uiState.foodList.forEachIndexed { index, item ->
                 item(key = item.id) {
                     FoodListItem(
                         modifier = Modifier.fillMaxWidth(),
                         item = item,
                         onClick = { onItemClick(item.id) },
                     )
-                    if (index != uiState.foodListAsync.foodList.lastIndex) {
+                    if (index != uiState.foodList.lastIndex) {
                         HorizontalDivider(
                             thickness = 1.dp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
@@ -166,8 +166,6 @@ private fun EmptyState(
 }
 
 
-
-
 private val previewItems = listOf(
     FoodUiModel(1, "Apple", 52.0),
     FoodUiModel(2, "Banana", 96.0),
@@ -178,12 +176,13 @@ private val previewItems = listOf(
     FoodUiModel(7, "Banana", 96.0),
     FoodUiModel(8, "Orange", 47.0),
 )
+
 @Preview(showBackground = true)
 @Composable
 private fun FoodListScreenPreview() {
 
     NutritionTrackerTheme {
-        FoodListContent(uiState = FoodListUiState(FoodListAsync.Success(previewItems)))
+        FoodListContent(uiState = FoodListUiState.Success(previewItems))
     }
 }
 
@@ -191,9 +190,9 @@ private fun FoodListScreenPreview() {
 @Composable
 private fun Empty() {
     NutritionTrackerTheme {
-        FoodListContent(uiState = FoodListUiState(
-            FoodListAsync.Initial
-        ))
+        FoodListContent(
+            uiState = FoodListUiState.Initial
+        )
     }
 }
 
@@ -201,9 +200,10 @@ private fun Empty() {
 @Composable
 private fun NotFound() {
     NutritionTrackerTheme {
-        FoodListContent(uiState = FoodListUiState(
-            FoodListAsync.Success(emptyList())
-        ))
+        FoodListContent(
+            uiState = FoodListUiState.Success(emptyList())
+        )
+
     }
 }
 
@@ -211,9 +211,9 @@ private fun NotFound() {
 @Composable
 private fun Loading() {
     NutritionTrackerTheme {
-        FoodListContent(uiState = FoodListUiState(
-            FoodListAsync.Loading(emptyList())
-        ))
+        FoodListContent(
+            uiState = FoodListUiState.Loading(emptyList())
+        )
     }
 }
 
@@ -221,8 +221,18 @@ private fun Loading() {
 @Composable
 private fun LoadingWithItems() {
     NutritionTrackerTheme {
-        FoodListContent(uiState = FoodListUiState(
-            FoodListAsync.Loading(previewItems)
-        ))
+        FoodListContent(
+            uiState = FoodListUiState.Loading(previewItems)
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ErrorWithItems() {
+    NutritionTrackerTheme {
+        FoodListContent(
+            uiState = FoodListUiState.Error(previewItems, "Something went wrong")
+        )
     }
 }
