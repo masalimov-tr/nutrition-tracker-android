@@ -47,7 +47,6 @@ class MainActivity : ComponentActivity() {
                 ModalBottomSheetLayout(
                     bottomSheetNavigator = bottomSheetNavigator,
                     sheetShape = MaterialTheme.shapes.large,
-                    scrimColor = MaterialTheme.colorScheme.outlineVariant,
                 ) {
                     NavHost(
                         navController = navController,
