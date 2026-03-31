@@ -5,7 +5,7 @@ import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
 
 
 private val today = DiaryDate.today()
-internal val calendar: List<DateUiModel> = (-3..7).map {
+internal val calendar: List<DateUiModel> = (-7..7).map {
     DateUiModel(today.plusDays(it), isSelected = it == 0)
 }
 
