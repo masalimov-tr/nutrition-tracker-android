@@ -18,6 +18,7 @@ appcompat = "1.7.1"
 material = "1.13.0"
 lifecycleViewModelKtx = "2.10.0"
 coroutines = "1.10.2"
+materialNavigation = "1.10.6"
 runtime = "1.10.5"
 navigationCompose = "2.8.5"
 kotlinxDatetime = "0.6.1"
@@ -26,6 +27,7 @@ material3 = "1.4.0"
 
 [libraries]
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
+androidx-compose-material-navigation = { module = "androidx.compose.material:material-navigation", version.ref = "materialNavigation" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 javax-inject = { module = "javax.inject:javax.inject", version.ref = "javaxInject" }

@@ -5,11 +5,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+//noinspection UsingMaterialAndMaterial3Libraries
+import androidx.compose.material.navigation.ModalBottomSheetLayout
+//noinspection UsingMaterialAndMaterial3Libraries
+import androidx.compose.material.navigation.bottomSheet
+//noinspection UsingMaterialAndMaterial3Libraries
+import androidx.compose.material.navigation.rememberBottomSheetNavigator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -23,7 +26,6 @@ import dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme
 import dev.masalimov.nutritiontracker.feature.diary.DiaryScreen
 import dev.masalimov.nutritiontracker.feature.diary.DiaryScreenRoute
 import dev.masalimov.nutritiontracker.feature.diary.DiaryViewModel
-import dev.masalimov.nutritiontracker.feature.diary.rememberDiaryBottomSheetState
 import dev.masalimov.nutritiontracker.feature.food.details.FoodDetailRoute
 import dev.masalimov.nutritiontracker.feature.food.details.FoodDetailScreen
 import dev.masalimov.nutritiontracker.feature.food.details.FoodDetailsViewModel
@@ -39,16 +41,19 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NutritionTrackerTheme {
-                val navController = rememberNavController()
-                val diaryBottomSheetState = rememberDiaryBottomSheetState()
+                val bottomSheetNavigator = rememberBottomSheetNavigator()
+                val navController = rememberNavController(bottomSheetNavigator)
 
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                ModalBottomSheetLayout(
+                    bottomSheetNavigator = bottomSheetNavigator,
+                    sheetShape = MaterialTheme.shapes.large,
+                    scrimColor = MaterialTheme.colorScheme.outlineVariant,
+                ) {
                     NavHost(
                         navController = navController,
                         startDestination = DiaryScreenRoute,
                         modifier = Modifier
                             .fillMaxSize()
-                            .then(Modifier.padding(innerPadding))
                     ) {
                         val foodIdToAdd =
                             navController.currentBackStackEntry?.savedStateHandle?.get<Long>(
@@ -57,32 +62,16 @@ class MainActivity : ComponentActivity() {
                         diaryScreen(
                             foodIdToAdd = foodIdToAdd,
                             onLogFoodClick = {
-                                diaryBottomSheetState.open()
+                                navController.navigateToFoodList()
                             })
-                        foodListScreen(onItemClick = { foodId ->
-                            navController.navigateToFoodDetail(foodId)
-                        })
-                        foodDetailsScreen()
-                    }
-                }
-
-                if (diaryBottomSheetState.isExtended) {
-                    ModalBottomSheet(
-                        onDismissRequest = { diaryBottomSheetState.close() },
-                        sheetState = diaryBottomSheetState.sheetState,
-                        containerColor = MaterialTheme.colorScheme.background,
-                    ) {
-                        val viewModel: FoodViewModel = hiltViewModel()
-                        FoodListScreen(
-                            viewModel = viewModel,
+                        foodListScreen(
                             onItemClick = { foodId ->
-                                diaryBottomSheetState.close()
                                 navController.setNavigationArguments(
                                     foodId,
                                     FOOD_ID_TO_ADD_NAVIGATION_ARG_KEY
                                 )
-                            }
-                        )
+                            })
+                        foodDetailsScreen()
                     }
                 }
             }
@@ -106,10 +95,14 @@ fun NavGraphBuilder.diaryScreen(
     }
 }
 
+fun NavController.navigateToFoodList() {
+    navigate(FoodListRoute)
+}
+
 fun NavGraphBuilder.foodListScreen(
     onItemClick: (Long) -> Unit = {},
 ) {
-    composable<FoodListRoute> {
+    bottomSheet<FoodListRoute> {
         val foodViewModel: FoodViewModel = hiltViewModel()
         FoodListScreen(
             modifier = Modifier.fillMaxSize(),
@@ -120,8 +113,8 @@ fun NavGraphBuilder.foodListScreen(
 }
 
 fun <T> NavController.setNavigationArguments(args: T, key: String) {
-    currentBackStackEntry?.savedStateHandle?.set(key, args)
-//    popBackStack()
+    previousBackStackEntry?.savedStateHandle?.set(key, args)
+    popBackStack()
 }
 
 fun NavController.navigateToFoodDetail(foodId: Long) {
