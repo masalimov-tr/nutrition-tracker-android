@@ -15,15 +15,15 @@ interface FoodDao {
 
     @Insert
     suspend fun insertAll(foods: List<FoodEntity>): List<Long>
-    @Query("SELECT * FROM FoodEntity")
+    @Query("SELECT * FROM FoodEntity WHERE isSaved = 1")
     suspend fun getAll(): List<FoodEntity>
 
     @Query("SELECT * FROM FoodEntity WHERE uid = :id")
     suspend fun getById(id: Long): FoodEntity
 
-    @Query("SELECT * FROM FoodEntity")
+    @Query("SELECT * FROM FoodEntity WHERE isSaved = 1")
     fun getAllStream(): Flow<List<FoodEntity>>
 
-    @Query("DELETE FROM FoodEntity WHERE uid = :foodId")
+    @Query("UPDATE FoodEntity SET isSaved = 0 WHERE uid = :foodId")
     suspend fun deleteById(foodId: Long)
 }

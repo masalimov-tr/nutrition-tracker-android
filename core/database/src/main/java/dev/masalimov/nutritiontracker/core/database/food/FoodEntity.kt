@@ -12,4 +12,6 @@ class FoodEntity(
     val proteinPer100g: Double,
     val fatPer100g: Double,
     val carbsPer100g: Double,
+    // Soft-delete flag: false means removed from the saved list but kept for diary history
+    val isSaved: Boolean = true,
 )

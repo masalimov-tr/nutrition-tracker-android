@@ -1,8 +1,6 @@
 package dev.masalimov.nutritiontracker.data.food
 
-import dev.masalimov.nutritiontracker.domain.FoodSearchException
 import kotlinx.coroutines.delay
-import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
 
@@ -14,11 +12,8 @@ internal class FoodApiFakeImpl @Inject constructor(): FoodApi {
         FoodApiModel(4, "Coca-cola", 300.0),
     )
 
-    var count = AtomicInteger(0)
     override suspend fun searchFood(query: String): List<FoodApiModel> {
-        delay(500) // Simulate network delay
-        if (count.incrementAndGet() % 3 == 0)
-            throw FoodSearchException()
+        delay(300) // Simulate network delay
         return apiFood.filter { it.name.contains(query, ignoreCase = true) }
     }
 
