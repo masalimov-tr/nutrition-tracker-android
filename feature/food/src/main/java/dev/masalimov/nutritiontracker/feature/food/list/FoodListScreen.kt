@@ -101,8 +101,7 @@ private fun FoodListContent(
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, top = 24.dp)
             )
-        }
-    ) { paddingValues ->
+        }) { paddingValues ->
 
         Box(
             modifier = modifier
@@ -117,15 +116,12 @@ private fun FoodListContent(
                     modifier = modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(16.dp),
                 ) {
-                    if (uiState is FoodListUiState.Initial || (uiState is FoodListUiState.Loading && uiState.foodList.isEmpty())) {
-                        return@LazyColumn
-                    }
                     fun foodListSectionOrEmpty(
                         sectionTitle: String,
                         emptyText: String,
                         foodList: List<FoodUiModel>,
                     ) {
-                        if (uiState is FoodListUiState.Success && foodList.isEmpty()) {
+                        if (foodList.isEmpty()) {
                             item {
                                 EmptyState(
                                     text = emptyText,
@@ -135,15 +131,14 @@ private fun FoodListContent(
                                 )
                             }
                         }
-                        if (uiState is FoodListUiState.Success && foodList.isNotEmpty()) {
+                        if (foodList.isNotEmpty()) {
                             item {
                                 SectionHeader(sectionTitle)
                             }
                             itemsIndexed(
                                 foodList,
                                 key = { _, item -> item.id + item.name.hashCode() },
-                                contentType = { _, _ -> sectionTitle }
-                            ) { index, item ->
+                                contentType = { _, _ -> sectionTitle }) { index, item ->
                                 FoodListItem(
                                     modifier = Modifier.fillMaxWidth(),
                                     item = item,
@@ -162,27 +157,28 @@ private fun FoodListContent(
                             }
                         }
                     }
+
+                    if (uiState is FoodListUiState.Initial ||
+                        (uiState is FoodListUiState.Loading &&
+                                uiState.savedFood.isEmpty() && uiState.searchedFood.isEmpty())
+                    ) {
+                        return@LazyColumn
+                    }
                     foodListSectionOrEmpty(
                         sectionTitle = "Saved foods",
                         emptyText = "No saved foods",
-                        foodList = (uiState as? FoodListUiState.Success)?.savedFood ?: emptyList()
+                        foodList = uiState.savedFood
                     )
-                    if (uiState is FoodListUiState.Success && uiState.searchedFood.isNotEmpty()) {
-                        item {
-                            HorizontalDivider(
-                                modifier = Modifier.padding(vertical = 16.dp),
-                                thickness = 2.dp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                                    alpha = 0.6f
-                                )
-                            )
-                        }
+                    item {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 16.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        )
                     }
                     foodListSectionOrEmpty(
                         sectionTitle = "Searched foods",
                         emptyText = "No searched foods",
-                        foodList = (uiState as? FoodListUiState.Success)?.searchedFood
-                            ?: emptyList()
+                        foodList = uiState.searchedFood
                     )
                 }
             }  // Surface
@@ -310,8 +306,7 @@ fun FoodListItemDialog(
 
 @Composable
 private fun EmptyState(
-    text: String,
-    modifier: Modifier = Modifier
+    text: String, modifier: Modifier = Modifier
 ) {
     Text(modifier = modifier, text = text)
 }
@@ -379,10 +374,10 @@ private fun Initial() {
 
 @Preview
 @Composable
-private fun Loading() {
+private fun LoadingEmpty() {
     NutritionTrackerTheme {
         FoodListContent(
-            uiState = FoodListUiState.Loading(emptyList())
+            uiState = FoodListUiState.Loading(emptyList(), emptyList())
         )
     }
 }
@@ -392,7 +387,7 @@ private fun Loading() {
 private fun LoadingWithItems() {
     NutritionTrackerTheme {
         FoodListContent(
-            uiState = FoodListUiState.Loading(previewItems1)
+            uiState = FoodListUiState.Loading(previewItems1, previewItems2)
         )
     }
 }
@@ -402,7 +397,7 @@ private fun LoadingWithItems() {
 private fun ErrorWithItems() {
     NutritionTrackerTheme {
         FoodListContent(
-            uiState = FoodListUiState.Error(previewItems1, "Something went wrong")
+            uiState = FoodListUiState.Error(previewItems1, previewItems2, "Something went wrong")
         )
     }
 }

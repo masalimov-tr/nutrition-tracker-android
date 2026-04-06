@@ -10,7 +10,6 @@ import dev.masalimov.nutritiontracker.domain.food.FoodRepository
 import dev.masalimov.nutritiontracker.domain.food.usecase.GetFoodByQueryUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -31,14 +30,26 @@ data class FoodUiModel(
 )
 
 sealed class FoodListUiState(
-    open val foodList: List<FoodUiModel> = emptyList()
+    open val savedFood: List<FoodUiModel> = emptyList(),
+    open val searchedFood: List<FoodUiModel> = emptyList()
 ) {
     data object Initial : FoodListUiState()
-    data class Loading(private val list: List<FoodUiModel>) : FoodListUiState(list)
-    data class Success(val savedFood: List<FoodUiModel>, val searchedFood: List<FoodUiModel>) :
-        FoodListUiState(savedFood + searchedFood)
 
-    data class Error(private val list: List<FoodUiModel>, val errorMessage: String?) : FoodListUiState(list)
+    data class Loading(
+        override val savedFood: List<FoodUiModel>,
+        override val searchedFood: List<FoodUiModel>
+    ) : FoodListUiState()
+
+    data class Success(
+        override val savedFood: List<FoodUiModel>,
+        override val searchedFood: List<FoodUiModel>
+    ) : FoodListUiState()
+
+    data class Error(
+        override val savedFood: List<FoodUiModel>,
+        override val searchedFood: List<FoodUiModel>,
+        val errorMessage: String?
+    ) : FoodListUiState()
 }
 
 
@@ -62,38 +73,42 @@ class FoodViewModel @Inject constructor(
     private val _deletionState = MutableStateFlow<DeletionState>(DeletionState.Idle)
     val deletionState: StateFlow<DeletionState> = _deletionState.asStateFlow()
 
-    val uiState: StateFlow<FoodListUiState> = combine(_foodQuery, _refreshTrigger) { query, _ -> query }
-        .debounce { if (it.isEmpty()) 0 else 300 }
-        .map { it.trim() }
-        .transformLatest { query ->
-            emit(FoodListUiState.Loading(uiState.value.foodList))
+    val uiState: StateFlow<FoodListUiState> =
+        combine(_foodQuery, _refreshTrigger) { query, _ -> query }
+            .debounce { if (it.isEmpty()) 0 else 300 }
+            .map { it.trim() }
+            .transformLatest { query ->
+                emit(FoodListUiState.Loading(uiState.value.savedFood, uiState.value.searchedFood))
 
-            if (query.isNotEmpty())
-                delay(300) // debounce
-
-            try {
-                val (savedFood, searchedFood) = getFoodByQueryUseCase(query)
-                emit(
-                    FoodListUiState.Success(
-                        savedFood = savedFood.map(Food::toUiModel),
-                        searchedFood = searchedFood.map(Food::toUiModel),
+                try {
+                    val (savedFood, searchedFood) = getFoodByQueryUseCase(query)
+                    emit(
+                        FoodListUiState.Success(
+                            savedFood = savedFood.map(Food::toUiModel),
+                            searchedFood = searchedFood.map(Food::toUiModel),
+                        )
                     )
-                )
-            } catch (e: Throwable) {
-                val errorMessage = if (e is FoodSearchException) e.errorMessage else null
-                emit(FoodListUiState.Error(uiState.value.foodList, errorMessage))
+                } catch (e: Throwable) {
+                    val errorMessage = if (e is FoodSearchException) e.errorMessage else null
+                    emit(
+                        FoodListUiState.Error(
+                            uiState.value.savedFood,
+                            uiState.value.searchedFood,
+                            errorMessage
+                        )
+                    )
+                }
             }
-
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = FoodListUiState.Initial
-        )
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = FoodListUiState.Initial
+            )
 
     fun onQueryChanged(query: String) {
         _foodQuery.value = query
     }
+
     fun onItemDeleteClick(foodId: Long) {
         viewModelScope.launch {
             _deletionState.value = DeletionState.InProgress
