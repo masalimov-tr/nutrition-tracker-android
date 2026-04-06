@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.androidxHiltNavigationCompose)
     ksp(libs.hiltAndroidCompiler)
     implementation(libs.kotlinx.datetime)
+    implementation(libs.androidx.compose.material.icons.extended)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -1,7 +1,5 @@
 package dev.masalimov.nutritiontracker.feature.diary.components
 
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -10,7 +8,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
 import dev.masalimov.nutritiontracker.feature.diary.DateUiModel
@@ -32,7 +29,7 @@ internal fun DateHeader(
 
     if (date?.date != null) {
         Text(
-            modifier = modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
+            modifier = modifier,
             text = date.date.date.toJavaLocalDate().format(formatterLineOne) + "\n" +
                     date.date.date.toJavaLocalDate().format(formatterLineTwo),
             style = MaterialTheme.typography.displaySmall,
@@ -47,7 +44,6 @@ internal fun DateHeader(
 private fun Preview() {
     NutritionTrackerTheme {
         DateHeader(
-            modifier = Modifier.fillMaxWidth().padding(top = 32.dp),
             date = DateUiModel(
                 date = DiaryDate.today(),
                 isSelected = true,

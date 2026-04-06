@@ -11,8 +11,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -43,6 +47,7 @@ object DiaryScreenRoute
 fun DiaryScreen(
     viewModel: DiaryViewModel = hiltViewModel(),
     onLogFoodClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
 
@@ -60,7 +65,8 @@ fun DiaryScreen(
         uiState,
         addFoodUiState,
         onDayClick = viewModel::onSelectDate,
-        onLogFoodClick = onLogFoodClick
+        onLogFoodClick = onLogFoodClick,
+        onSettingsClick = onSettingsClick,
     )
 }
 
@@ -70,6 +76,7 @@ private fun DiaryContent(
     addFoodUiState: AddFoodUiState,
     onDayClick: (DiaryDate) -> Unit = {},
     onLogFoodClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {},
 ) {
     Scaffold(
         floatingActionButton = {
@@ -94,10 +101,27 @@ private fun DiaryContent(
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
                 item(key = "date_header") {
-                    DateHeader(
-                        Modifier.fillMaxWidth(),
-                        uiState.dateList.find { it.isSelected },
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        DateHeader(
+                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
+                            uiState.dateList.find { it.isSelected },
+                            )
+                        IconButton(
+                            modifier = Modifier.padding(top = 16.dp),
+                            colors = androidx.compose.material3.IconButtonDefaults.iconButtonColors(
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            ),
+                            onClick = onSettingsClick
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = "Settings screen"
+                            )
+                        }
+                    }
                 }
 
                 item(key = "date_list") {

@@ -4,17 +4,28 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-//noinspection UsingMaterialAndMaterial3Libraries
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.navigation.ModalBottomSheetLayout
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.navigation.bottomSheet
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.navigation.rememberBottomSheetNavigator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -40,7 +51,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            NutritionTrackerTheme {
+            val systemDark = isSystemInDarkTheme()
+            val darkTheme = rememberSaveable { mutableStateOf(systemDark) }
+            NutritionTrackerTheme(
+                darkTheme = darkTheme.value,
+            ) {
                 val bottomSheetNavigator = rememberBottomSheetNavigator()
                 val navController = rememberNavController(bottomSheetNavigator)
 
@@ -62,7 +77,11 @@ class MainActivity : ComponentActivity() {
                             foodIdToAdd = foodIdToAdd,
                             onLogFoodClick = {
                                 navController.navigateToFoodList()
-                            })
+                            },
+                            onSettingsClick = {
+                                navController.navigateToSettings()
+                            },
+                        )
                         foodListScreen(
                             onItemClick = { foodId ->
                                 navController.setNavigationArguments(
@@ -71,6 +90,11 @@ class MainActivity : ComponentActivity() {
                                 )
                             })
                         foodDetailsScreen()
+                        settingsScreen(
+                            darkThemeEnabled = darkTheme,
+                            onDarkThemeChange = {
+                                darkTheme.value = it
+                            })
                     }
                 }
             }
@@ -82,6 +106,7 @@ const val FOOD_ID_TO_ADD_NAVIGATION_ARG_KEY = "foodIdToAdd"
 fun NavGraphBuilder.diaryScreen(
     foodIdToAdd: Long? = null,
     onLogFoodClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {},
 ) {
     composable<DiaryScreenRoute> {
         val viewModel: DiaryViewModel = hiltViewModel()
@@ -90,12 +115,62 @@ fun NavGraphBuilder.diaryScreen(
                 viewModel.addFoodToDiary(foodIdToAdd)
             }
         }
-        DiaryScreen(viewModel, onLogFoodClick)
+        DiaryScreen(viewModel, onLogFoodClick, onSettingsClick)
     }
 }
 
 fun NavController.navigateToFoodList() {
     navigate(FoodListRoute)
+}
+
+
+fun NavController.navigateToSettings() {
+    navigate("settings")
+}
+
+fun NavGraphBuilder.settingsScreen(
+    modifier: Modifier = Modifier,
+    darkThemeEnabled: State<Boolean>,
+    onDarkThemeChange: (Boolean) -> Unit = {},
+) {
+    composable("settings") {
+        Scaffold { innerPadding ->
+            Surface(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                color = MaterialTheme.colorScheme.background,
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 48.dp, start = 24.dp, end = 24.dp)
+                ) {
+                    Text(
+                        text = "Settings",
+                        style = MaterialTheme.typography.displaySmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            "Dark mode",
+                        )
+                        Switch(
+                            checked = darkThemeEnabled.value,
+                            onCheckedChange = {
+                                onDarkThemeChange(it)
+                            },
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 
 fun NavGraphBuilder.foodListScreen(
