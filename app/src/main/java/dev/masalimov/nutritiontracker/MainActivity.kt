@@ -21,12 +21,14 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
@@ -69,12 +71,7 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier
                             .fillMaxSize()
                     ) {
-                        val foodIdToAdd =
-                            navController.currentBackStackEntry?.savedStateHandle?.get<Long>(
-                                FOOD_ID_TO_ADD_NAVIGATION_ARG_KEY
-                            )
                         diaryScreen(
-                            foodIdToAdd = foodIdToAdd,
                             onLogFoodClick = {
                                 navController.navigateToFoodList()
                             },
@@ -88,7 +85,11 @@ class MainActivity : ComponentActivity() {
                                     foodId,
                                     FOOD_ID_TO_ADD_NAVIGATION_ARG_KEY
                                 )
-                            })
+                            },
+                            onItemLongClick = { foodId ->
+                                navController.navigateToFoodDetail(foodId)
+                            },
+                        )
                         foodDetailsScreen()
                         settingsScreen(
                             darkThemeEnabled = darkTheme,
@@ -104,15 +105,20 @@ class MainActivity : ComponentActivity() {
 
 const val FOOD_ID_TO_ADD_NAVIGATION_ARG_KEY = "foodIdToAdd"
 fun NavGraphBuilder.diaryScreen(
-    foodIdToAdd: Long? = null,
     onLogFoodClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
 ) {
-    composable<DiaryScreenRoute> {
+    composable<DiaryScreenRoute> { backStackEntry ->
         val viewModel: DiaryViewModel = hiltViewModel()
+
+        val foodIdToAdd by backStackEntry
+            .savedStateHandle
+            .getStateFlow<Long?>(FOOD_ID_TO_ADD_NAVIGATION_ARG_KEY, null)
+            .collectAsStateWithLifecycle()
+
         LaunchedEffect(foodIdToAdd) {
             if (foodIdToAdd != null) {
-                viewModel.addFoodToDiary(foodIdToAdd)
+                viewModel.addFoodToDiary(foodIdToAdd as Long)
             }
         }
         DiaryScreen(viewModel, onLogFoodClick, onSettingsClick)
@@ -175,6 +181,7 @@ fun NavGraphBuilder.settingsScreen(
 
 fun NavGraphBuilder.foodListScreen(
     onItemClick: (Long) -> Unit = {},
+    onItemLongClick: (Long) -> Unit = {},
 ) {
     bottomSheet<FoodListRoute> {
         val foodViewModel: FoodViewModel = hiltViewModel()
@@ -182,6 +189,7 @@ fun NavGraphBuilder.foodListScreen(
             modifier = Modifier.fillMaxSize(),
             viewModel = foodViewModel,
             onItemClick = onItemClick,
+            onItemLongClick = onItemLongClick,
         )
     }
 }

@@ -7,18 +7,24 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,9 +44,10 @@ fun FoodListScreen(
     modifier: Modifier = Modifier,
     viewModel: FoodViewModel,
     onItemClick: (Long) -> Unit = {},
+    onItemLongClick: (Long) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    FoodListContent(modifier, uiState, onItemClick, viewModel::onQueryChanged)
+    FoodListContent(modifier, uiState, onItemClick, onItemLongClick, viewModel::onQueryChanged)
 }
 
 @Composable
@@ -48,6 +55,7 @@ private fun FoodListContent(
     modifier: Modifier = Modifier,
     uiState: FoodListUiState,
     onItemClick: (Long) -> Unit = {},
+    onItemLongClick: (Long) -> Unit = {},
     onQueryChanged: (String) -> Unit = {},
 ) {
     var query by rememberSaveable { mutableStateOf("") }
@@ -110,6 +118,7 @@ private fun FoodListContent(
                                 modifier = Modifier.fillMaxWidth(),
                                 item = item,
                                 onClick = { onItemClick(item.id) },
+                                onLongClick = { onItemLongClick(item.id) },
                             )
                             if (index != foodList.lastIndex) {
                                 HorizontalDivider(
@@ -127,14 +136,16 @@ private fun FoodListContent(
                     emptyText = "No saved foods",
                     foodList = (uiState as? FoodListUiState.Success)?.savedFood ?: emptyList()
                 )
-                item {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 16.dp),
-                        thickness = 2.dp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                            alpha = 0.6f
+                if (uiState is FoodListUiState.Success && uiState.searchedFood.isNotEmpty()) {
+                    item {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 16.dp),
+                            thickness = 2.dp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                alpha = 0.6f
+                            )
                         )
-                    )
+                    }
                 }
                 foodListSectionOrEmpty(
                     sectionTitle = "Searched foods",
@@ -162,12 +173,22 @@ private fun SectionHeader(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FoodListItem(
     item: FoodUiModel,
     onClick: () -> Unit,
+    onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
+    showDialog: Boolean = false,
 ) {
+    var dialog by rememberSaveable { mutableStateOf(showDialog) }
+    if (dialog) {
+        FoodListItemDialog(
+            onDismissRequest = { dialog = false },
+            onClick = onLongClick,
+        )
+    }
     AppCard(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.background,
@@ -175,6 +196,9 @@ private fun FoodListItem(
         borderStroke = null,
         cornerRadius = 0.dp,
         onClick = onClick,
+        onLongClick = {
+            dialog = true
+        },
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
@@ -198,6 +222,38 @@ private fun FoodListItem(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FoodListItemDialog(
+    onDismissRequest: () -> Unit,
+    onClick: () -> Unit,
+) {
+    BasicAlertDialog(
+        onDismissRequest = onDismissRequest,
+    ) {
+        Surface(
+            modifier = Modifier
+                .wrapContentHeight(),
+            shape = MaterialTheme.shapes.large,
+            tonalElevation = AlertDialogDefaults.TonalElevation,
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Edit food?",
+                    style = MaterialTheme.typography.titleMedium.copy(),
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                TextButton(
+                    onClick = onClick,
+                    modifier = Modifier.align(Alignment.End),
+                ) {
+                    Text("Confirm")
+                }
+            }
+        }
+    }
+}
 
 @Composable
 private fun EmptyState(
@@ -233,7 +289,6 @@ private val previewItems2 = listOf(
 @Preview(showBackground = true)
 @Composable
 private fun FoodListScreenPreview() {
-
     NutritionTrackerTheme {
         FoodListContent(uiState = FoodListUiState.Success(previewItems1, previewItems2))
     }
@@ -295,6 +350,19 @@ private fun ErrorWithItems() {
     NutritionTrackerTheme {
         FoodListContent(
             uiState = FoodListUiState.Error(previewItems1, "Something went wrong")
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun Dialog() {
+    NutritionTrackerTheme {
+        FoodListItem(
+            item = FoodUiModel(1, "Apple", 52.0),
+            onClick = {},
+            onLongClick = {},
+            showDialog = true,
         )
     }
 }
