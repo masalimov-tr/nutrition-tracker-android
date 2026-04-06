@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,70 +50,108 @@ private fun FoodListContent(
     onItemClick: (Long) -> Unit = {},
     onQueryChanged: (String) -> Unit = {},
 ) {
+    var query by rememberSaveable { mutableStateOf("") }
 
-    Surface(
-        modifier = modifier
-            .fillMaxSize(),
-        color = MaterialTheme.colorScheme.background,
-    ) {
-        LazyColumn(
-            modifier = modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(16.dp),
+    Scaffold(
+        topBar = {
+            AppSearchBar(
+                query = query,
+                onQueryChange = {
+                    query = it
+                    onQueryChanged(it)
+                },
+                isLoading = uiState is FoodListUiState.Loading,
+                errorMessage = (uiState as? FoodListUiState.Error)?.errorMessage,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, top = 24.dp)
+            )
+        }
+    ) { paddingValues ->
+
+        Surface(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            color = MaterialTheme.colorScheme.background,
         ) {
-            item {
-                var query by rememberSaveable { mutableStateOf("") }
-
-                AppSearchBar(
-                    query = query,
-                    onQueryChange = {
-                        query = it
-                        onQueryChanged(it)
-                    },
-                    isLoading = uiState is FoodListUiState.Loading,
-                    errorMessage = (uiState as? FoodListUiState.Error)?.errorMessage,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                )
-            }
-            if (uiState is FoodListUiState.Success && uiState.foodList.isEmpty()) {
-                item {
-                    NotFoundState(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(8.dp)
-                    )
+            LazyColumn(
+                modifier = modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(16.dp),
+            ) {
+                if (uiState is FoodListUiState.Initial || (uiState is FoodListUiState.Loading && uiState.foodList.isEmpty())) {
+                    return@LazyColumn
                 }
-            }
-
-            if (uiState is FoodListUiState.Initial) {
-                item {
-                    EmptyState(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(8.dp)
-                    )
-                }
-            }
-            uiState.foodList.forEachIndexed { index, item ->
-                item(key = item.id) {
-                    FoodListItem(
-                        modifier = Modifier.fillMaxWidth(),
-                        item = item,
-                        onClick = { onItemClick(item.id) },
-                    )
-                    if (index != uiState.foodList.lastIndex) {
-                        HorizontalDivider(
-                            thickness = 1.dp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
-                        )
+                fun foodListSectionOrEmpty(
+                    sectionTitle: String,
+                    emptyText: String,
+                    foodList: List<FoodUiModel>,
+                ) {
+                    item {
+                        SectionHeader(sectionTitle)
+                    }
+                    if (uiState is FoodListUiState.Success && foodList.isEmpty()) {
+                        item {
+                            EmptyState(
+                                text = emptyText,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(8.dp)
+                            )
+                        }
+                    }
+                    if (uiState is FoodListUiState.Success && foodList.isNotEmpty()) {
+                        itemsIndexed(
+                            foodList,
+                            key = { _, item -> item.id },
+                            contentType = { _, _ -> sectionTitle }
+                        ) { index, item ->
+                            FoodListItem(
+                                modifier = Modifier.fillMaxWidth(),
+                                item = item,
+                                onClick = { onItemClick(item.id) },
+                            )
+                            if (index != foodList.lastIndex) {
+                                HorizontalDivider(
+                                    thickness = 1.dp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                        alpha = 0.2f
+                                    )
+                                )
+                            }
+                        }
                     }
                 }
+                foodListSectionOrEmpty(
+                    sectionTitle = "Saved foods",
+                    emptyText = "No saved foods",
+                    foodList = (uiState as? FoodListUiState.Success)?.savedFood ?: emptyList()
+                )
+                foodListSectionOrEmpty(
+                    sectionTitle = "Searched foods",
+                    emptyText = "No searched foods",
+                    foodList = (uiState as? FoodListUiState.Success)?.searchedFood ?: emptyList()
+                )
             }
         }
     }
 }
 
+
+@Composable
+private fun SectionHeader(
+    text: String,
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        modifier = modifier.padding(vertical = 8.dp),
+        text = text,
+        style = MaterialTheme.typography.labelMedium.copy(
+            fontWeight = FontWeight.Bold
+        ),
+        color = MaterialTheme.colorScheme.onPrimaryContainer,
+    )
+}
 
 @Composable
 private fun FoodListItem(
@@ -151,22 +191,15 @@ private fun FoodListItem(
 
 
 @Composable
-private fun NotFoundState(
-    modifier: Modifier = Modifier
-) {
-    Text(modifier = modifier, text = "No food found")
-}
-
-
-@Composable
 private fun EmptyState(
+    text: String,
     modifier: Modifier = Modifier
 ) {
-    Text(modifier = modifier, text = "Not yet added")
+    Text(modifier = modifier, text = text)
 }
 
 
-private val previewItems = listOf(
+private val previewItems1 = listOf(
     FoodUiModel(1, "Apple", 52.0),
     FoodUiModel(2, "Banana", 96.0),
     FoodUiModel(3, "Orange", 47.0),
@@ -177,33 +210,53 @@ private val previewItems = listOf(
     FoodUiModel(8, "Orange", 47.0),
 )
 
+private val previewItems2 = listOf(
+    FoodUiModel(10, "Apple", 52.0),
+    FoodUiModel(20, "Banana", 96.0),
+    FoodUiModel(30, "Orange", 47.0),
+    FoodUiModel(40, "Apple", 52.0),
+    FoodUiModel(50, "Banana", 96.0),
+    FoodUiModel(60, "Orange", 47.0),
+    FoodUiModel(70, "Banana", 96.0),
+    FoodUiModel(80, "Orange", 47.0),
+)
+
 @Preview(showBackground = true)
 @Composable
 private fun FoodListScreenPreview() {
 
     NutritionTrackerTheme {
-        FoodListContent(uiState = FoodListUiState.Success(previewItems))
+        FoodListContent(uiState = FoodListUiState.Success(previewItems1, previewItems2))
     }
 }
 
 @Preview
 @Composable
-private fun Empty() {
+private fun NoSavedFood() {
+    NutritionTrackerTheme {
+        FoodListContent(
+            uiState = FoodListUiState.Success(emptyList(), previewItems2)
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun NoSearchedFood() {
+    NutritionTrackerTheme {
+        FoodListContent(
+            uiState = FoodListUiState.Success(previewItems1, emptyList())
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun Initial() {
     NutritionTrackerTheme {
         FoodListContent(
             uiState = FoodListUiState.Initial
         )
-    }
-}
-
-@Preview
-@Composable
-private fun NotFound() {
-    NutritionTrackerTheme {
-        FoodListContent(
-            uiState = FoodListUiState.Success(emptyList())
-        )
-
     }
 }
 
@@ -222,7 +275,7 @@ private fun Loading() {
 private fun LoadingWithItems() {
     NutritionTrackerTheme {
         FoodListContent(
-            uiState = FoodListUiState.Loading(previewItems)
+            uiState = FoodListUiState.Loading(previewItems1)
         )
     }
 }
@@ -232,7 +285,7 @@ private fun LoadingWithItems() {
 private fun ErrorWithItems() {
     NutritionTrackerTheme {
         FoodListContent(
-            uiState = FoodListUiState.Error(previewItems, "Something went wrong")
+            uiState = FoodListUiState.Error(previewItems1, "Something went wrong")
         )
     }
 }

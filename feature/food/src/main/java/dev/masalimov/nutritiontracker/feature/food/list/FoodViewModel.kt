@@ -1,11 +1,12 @@
 package dev.masalimov.nutritiontracker.feature.food.list
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.masalimov.nutritiontracker.domain.FoodSearchException
 import dev.masalimov.nutritiontracker.domain.food.Food
-import dev.masalimov.nutritiontracker.domain.food.FoodRepository
+import dev.masalimov.nutritiontracker.domain.food.usecase.GetSavedAndSearchFoodUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
@@ -18,7 +19,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import javax.inject.Inject
 
-
+@Immutable
 data class FoodUiModel(
     val id: Long,
     val name: String,
@@ -29,16 +30,18 @@ sealed class FoodListUiState(
     open val foodList: List<FoodUiModel> = emptyList()
 ) {
     data object Initial : FoodListUiState()
-    data class Loading(val list: List<FoodUiModel>) : FoodListUiState(list)
-    data class Success(val list: List<FoodUiModel>) : FoodListUiState(list)
-    data class Error(val list: List<FoodUiModel>, val errorMessage: String?) : FoodListUiState(list)
+    data class Loading(private val list: List<FoodUiModel>) : FoodListUiState(list)
+    data class Success(val savedFood: List<FoodUiModel>, val searchedFood: List<FoodUiModel>) :
+        FoodListUiState(savedFood + searchedFood)
+
+    data class Error(private val list: List<FoodUiModel>, val errorMessage: String?) : FoodListUiState(list)
 }
 
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class FoodViewModel @Inject constructor(
-    private val foodRepository: FoodRepository,
+    private val getSavedAndSearchFoodUseCase: GetSavedAndSearchFoodUseCase
 ) : ViewModel() {
 
     private val _foodQuery: MutableStateFlow<String> = MutableStateFlow("")
@@ -47,19 +50,19 @@ class FoodViewModel @Inject constructor(
         .map { it.trim() }
         .distinctUntilChanged()
         .transformLatest { query ->
-            if (query.isEmpty()) {
-                emit(FoodListUiState.Initial)
-                return@transformLatest
-            }
-
             emit(FoodListUiState.Loading(uiState.value.foodList))
 
             if (query.isNotEmpty())
                 delay(300) // debounce
 
             try {
-                val foundFood = foodRepository.searchFood(query).map { it.toUiModel() }
-                emit(FoodListUiState.Success(foundFood))
+                val (savedFood, searchedFood) = getSavedAndSearchFoodUseCase(query)
+                emit(
+                    FoodListUiState.Success(
+                        savedFood = savedFood.map(Food::toUiModel),
+                        searchedFood = searchedFood.map(Food::toUiModel),
+                    )
+                )
             } catch (e: Throwable) {
                 val errorMessage = if (e is FoodSearchException) e.errorMessage else null
                 emit(FoodListUiState.Error(uiState.value.foodList, errorMessage))
