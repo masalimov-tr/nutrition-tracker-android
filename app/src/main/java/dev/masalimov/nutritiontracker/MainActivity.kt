@@ -1,24 +1,27 @@
 package dev.masalimov.nutritiontracker
 
+//noinspection UsingMaterialAndMaterial3Libraries
+//noinspection UsingMaterialAndMaterial3Libraries
+//noinspection UsingMaterialAndMaterial3Libraries
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.navigation.ModalBottomSheetLayout
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.navigation.bottomSheet
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.navigation.rememberBottomSheetNavigator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -26,6 +29,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -48,6 +53,7 @@ import dev.masalimov.nutritiontracker.feature.food.details.FoodDetailsViewModel
 import dev.masalimov.nutritiontracker.feature.food.list.FoodListRoute
 import dev.masalimov.nutritiontracker.feature.food.list.FoodListScreen
 import dev.masalimov.nutritiontracker.feature.food.list.FoodViewModel
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,43 +69,55 @@ class MainActivity : ComponentActivity() {
             ) {
                 val bottomSheetNavigator = rememberBottomSheetNavigator()
                 val navController = rememberNavController(bottomSheetNavigator)
-
-                ModalBottomSheetLayout(
-                    bottomSheetNavigator = bottomSheetNavigator,
-                    sheetShape = MaterialTheme.shapes.large,
-                ) {
-                    NavHost(
-                        navController = navController,
-                        startDestination = DiaryScreenRoute,
-                        modifier = Modifier
-                            .fillMaxSize()
+                val snackbarHostState = remember { SnackbarHostState() }
+                val coroutineScope = rememberCoroutineScope()
+                Box {
+                    ModalBottomSheetLayout(
+                        bottomSheetNavigator = bottomSheetNavigator,
+                        sheetShape = MaterialTheme.shapes.large,
                     ) {
-                        diaryScreen(
-                            onLogFoodClick = {
-                                navController.navigateToFoodList()
-                            },
-                            onSettingsClick = {
-                                navController.navigateToSettings()
-                            },
-                        )
-                        foodListScreen(
-                            onItemClick = { foodId ->
-                                navController.setNavigationArguments(
-                                    foodId,
-                                    FOOD_ID_TO_ADD_NAVIGATION_ARG_KEY
-                                )
-                            },
-                            onEditClick = { foodId ->
-                                navController.navigateToFoodDetail(foodId)
-                            },
-                        )
-                        foodDetailsScreen()
-                        settingsScreen(
-                            darkThemeEnabled = darkTheme,
-                            onDarkThemeChange = {
-                                darkTheme.value = it
-                            })
+                        NavHost(
+                            navController = navController,
+                            startDestination = DiaryScreenRoute,
+                            modifier = Modifier
+                                .fillMaxSize()
+                        ) {
+                            diaryScreen(
+                                onLogFoodClick = {
+                                    navController.navigateToFoodList()
+                                },
+                                onSettingsClick = {
+                                    navController.navigateToSettings()
+                                },
+                            )
+                            foodListScreen(
+                                onItemClick = { foodId ->
+                                    navController.setNavigationArguments(
+                                        foodId,
+                                        FOOD_ID_TO_ADD_NAVIGATION_ARG_KEY
+                                    )
+                                },
+                                onEditClick = { foodId ->
+                                    navController.navigateToFoodDetail(foodId)
+                                },
+                                onSnackbarShow = {
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar(it)
+                                    }
+                                }
+                            )
+                            foodDetailsScreen()
+                            settingsScreen(
+                                darkThemeEnabled = darkTheme,
+                                onDarkThemeChange = {
+                                    darkTheme.value = it
+                                })
+                        }
                     }
+                    SnackbarHost(
+                        hostState = snackbarHostState,
+                        modifier = Modifier.align(androidx.compose.ui.Alignment.BottomCenter)
+                    )
                 }
             }
         }
@@ -185,6 +203,7 @@ fun NavGraphBuilder.settingsScreen(
 fun NavGraphBuilder.foodListScreen(
     onItemClick: (Long) -> Unit = {},
     onEditClick: (Long) -> Unit = {},
+    onSnackbarShow: (String) -> Unit = {},
 ) {
     bottomSheet<FoodListRoute> {
         val foodViewModel: FoodViewModel = hiltViewModel()
@@ -193,6 +212,7 @@ fun NavGraphBuilder.foodListScreen(
             viewModel = foodViewModel,
             onItemClick = onItemClick,
             onEditClick = onEditClick,
+            onShowSnackBar = onSnackbarShow
         )
     }
 }

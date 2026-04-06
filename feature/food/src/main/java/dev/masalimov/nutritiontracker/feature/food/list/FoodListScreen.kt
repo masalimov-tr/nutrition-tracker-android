@@ -14,13 +14,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -28,7 +25,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -52,9 +48,22 @@ fun FoodListScreen(
     viewModel: FoodViewModel,
     onItemClick: (Long) -> Unit = {},
     onEditClick: (Long) -> Unit = {},
+    onShowSnackBar: suspend (String) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val deletionState by viewModel.deletionState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(deletionState) {
+        if (deletionState is DeletionState.Error) {
+            onShowSnackBar((deletionState as DeletionState.Error).message)
+            viewModel.onDeletionSnackbarDismissed()
+        }
+        if (deletionState is DeletionState.Success) {
+            onShowSnackBar("Item deleted")
+            viewModel.onDeletionSnackbarDismissed()
+        }
+    }
+
     FoodListContent(
         modifier = modifier,
         uiState = uiState,
@@ -63,7 +72,6 @@ fun FoodListScreen(
         onEditClick = onEditClick,
         onItemDeleteClick = viewModel::onItemDeleteClick,
         onQueryChanged = viewModel::onQueryChanged,
-        onDeletionSnackbarDismissed = viewModel::onDeletionSnackbarDismissed,
     )
 }
 
@@ -76,24 +84,10 @@ private fun FoodListContent(
     onEditClick: (Long) -> Unit = {},
     onItemDeleteClick: (Long) -> Unit = {},
     onQueryChanged: (String) -> Unit = {},
-    onDeletionSnackbarDismissed: () -> Unit = {},
 ) {
     var query by rememberSaveable { mutableStateOf("") }
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    LaunchedEffect(deletionState) {
-        if (deletionState is DeletionState.Error) {
-            snackbarHostState.showSnackbar(deletionState.message)
-            onDeletionSnackbarDismissed()
-        }
-        if (deletionState is DeletionState.Success) {
-            snackbarHostState.showSnackbar("Item deleted")
-            onDeletionSnackbarDismissed()
-        }
-    }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             AppSearchBar(
                 query = query,
@@ -101,7 +95,7 @@ private fun FoodListContent(
                     query = it
                     onQueryChanged(it)
                 },
-                isLoading = uiState is FoodListUiState.Loading,
+                isLoading = uiState is FoodListUiState.Loading || deletionState is DeletionState.InProgress,
                 errorMessage = (uiState as? FoodListUiState.Error)?.errorMessage,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -192,10 +186,6 @@ private fun FoodListContent(
                     )
                 }
             }  // Surface
-
-            if (deletionState is DeletionState.InProgress) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            }
         }  // Box
     }  // Scaffold
 }
