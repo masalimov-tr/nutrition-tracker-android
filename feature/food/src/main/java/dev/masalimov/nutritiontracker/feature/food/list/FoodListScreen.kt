@@ -1,13 +1,14 @@
 package dev.masalimov.nutritiontracker.feature.food.list
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.AlertDialogDefaults
@@ -44,10 +45,17 @@ fun FoodListScreen(
     modifier: Modifier = Modifier,
     viewModel: FoodViewModel,
     onItemClick: (Long) -> Unit = {},
-    onItemLongClick: (Long) -> Unit = {},
+    onEditClick: (Long) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    FoodListContent(modifier, uiState, onItemClick, onItemLongClick, viewModel::onQueryChanged)
+    FoodListContent(
+        modifier = modifier,
+        uiState = uiState,
+        onItemClick = onItemClick,
+        onEditClick = onEditClick,
+        onItemDeleteClick = viewModel::onItemDeleteClick,
+        onQueryChanged = viewModel::onQueryChanged,
+    )
 }
 
 @Composable
@@ -55,7 +63,8 @@ private fun FoodListContent(
     modifier: Modifier = Modifier,
     uiState: FoodListUiState,
     onItemClick: (Long) -> Unit = {},
-    onItemLongClick: (Long) -> Unit = {},
+    onEditClick: (Long) -> Unit = {},
+    onItemDeleteClick: (Long) -> Unit = {},
     onQueryChanged: (String) -> Unit = {},
 ) {
     var query by rememberSaveable { mutableStateOf("") }
@@ -118,7 +127,8 @@ private fun FoodListContent(
                                 modifier = Modifier.fillMaxWidth(),
                                 item = item,
                                 onClick = { onItemClick(item.id) },
-                                onLongClick = { onItemLongClick(item.id) },
+                                onEditClick = { onEditClick(item.id) },
+                                onDeleteClick = { onItemDeleteClick(item.id) },
                             )
                             if (index != foodList.lastIndex) {
                                 HorizontalDivider(
@@ -176,17 +186,25 @@ private fun SectionHeader(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FoodListItem(
+    modifier: Modifier = Modifier,
     item: FoodUiModel,
     onClick: () -> Unit,
-    onLongClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit = {},
     showDialog: Boolean = false,
 ) {
     var dialog by rememberSaveable { mutableStateOf(showDialog) }
     if (dialog) {
         FoodListItemDialog(
             onDismissRequest = { dialog = false },
-            onClick = onLongClick,
+            onEditClick = {
+                dialog = false
+                onEditClick()
+            },
+            onDeleteClick = {
+                dialog = false
+                onDeleteClick()
+            },
         )
     }
     AppCard(
@@ -226,29 +244,41 @@ private fun FoodListItem(
 @Composable
 fun FoodListItemDialog(
     onDismissRequest: () -> Unit,
-    onClick: () -> Unit,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit,
 ) {
     BasicAlertDialog(
         onDismissRequest = onDismissRequest,
     ) {
         Surface(
-            modifier = Modifier
-                .wrapContentHeight(),
+            modifier = Modifier,
             shape = MaterialTheme.shapes.large,
             tonalElevation = AlertDialogDefaults.TonalElevation,
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
                 Text(
-                    text = "Edit food?",
+                    text = "What would you like to do?",
                     style = MaterialTheme.typography.titleMedium.copy(),
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    modifier = Modifier.align(Alignment.Start),
                 )
-                Spacer(modifier = Modifier.height(24.dp))
-                TextButton(
-                    onClick = onClick,
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
                     modifier = Modifier.align(Alignment.End),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text("Confirm")
+                    TextButton(
+                        onClick = onEditClick,
+                    ) {
+                        Text("Edit")
+                    }
+                    TextButton(
+                        onClick = onDeleteClick,
+                    ) {
+                        Text(
+                            "Delete",
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
                 }
             }
         }
@@ -361,7 +391,7 @@ private fun Dialog() {
         FoodListItem(
             item = FoodUiModel(1, "Apple", 52.0),
             onClick = {},
-            onLongClick = {},
+            onEditClick = {},
             showDialog = true,
         )
     }

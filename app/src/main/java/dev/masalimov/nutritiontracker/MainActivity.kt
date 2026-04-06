@@ -86,7 +86,7 @@ class MainActivity : ComponentActivity() {
                                     FOOD_ID_TO_ADD_NAVIGATION_ARG_KEY
                                 )
                             },
-                            onItemLongClick = { foodId ->
+                            onEditClick = { foodId ->
                                 navController.navigateToFoodDetail(foodId)
                             },
                         )
@@ -181,7 +181,7 @@ fun NavGraphBuilder.settingsScreen(
 
 fun NavGraphBuilder.foodListScreen(
     onItemClick: (Long) -> Unit = {},
-    onItemLongClick: (Long) -> Unit = {},
+    onEditClick: (Long) -> Unit = {},
 ) {
     bottomSheet<FoodListRoute> {
         val foodViewModel: FoodViewModel = hiltViewModel()
@@ -189,7 +189,7 @@ fun NavGraphBuilder.foodListScreen(
             modifier = Modifier.fillMaxSize(),
             viewModel = foodViewModel,
             onItemClick = onItemClick,
-            onItemLongClick = onItemLongClick,
+            onEditClick = onEditClick,
         )
     }
 }

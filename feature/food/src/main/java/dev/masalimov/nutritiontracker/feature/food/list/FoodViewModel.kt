@@ -80,6 +80,9 @@ class FoodViewModel @Inject constructor(
     fun onQueryChanged(query: String) {
         _foodQuery.value = query
     }
+    fun onItemDeleteClick(foodId: Long) {
+        // TODO: delete food
+    }
 }
 
 private fun Food.toUiModel() = FoodUiModel(
