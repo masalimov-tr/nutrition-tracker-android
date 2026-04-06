@@ -1,6 +1,7 @@
 package dev.masalimov.nutritiontracker.feature.food.list
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,16 +14,21 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,13 +54,16 @@ fun FoodListScreen(
     onEditClick: (Long) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val deletionState by viewModel.deletionState.collectAsStateWithLifecycle()
     FoodListContent(
         modifier = modifier,
         uiState = uiState,
+        deletionState = deletionState,
         onItemClick = onItemClick,
         onEditClick = onEditClick,
         onItemDeleteClick = viewModel::onItemDeleteClick,
         onQueryChanged = viewModel::onQueryChanged,
+        onDeletionSnackbarDismissed = viewModel::onDeletionSnackbarDismissed,
     )
 }
 
@@ -62,14 +71,29 @@ fun FoodListScreen(
 private fun FoodListContent(
     modifier: Modifier = Modifier,
     uiState: FoodListUiState,
+    deletionState: DeletionState = DeletionState.Idle,
     onItemClick: (Long) -> Unit = {},
     onEditClick: (Long) -> Unit = {},
     onItemDeleteClick: (Long) -> Unit = {},
     onQueryChanged: (String) -> Unit = {},
+    onDeletionSnackbarDismissed: () -> Unit = {},
 ) {
     var query by rememberSaveable { mutableStateOf("") }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(deletionState) {
+        if (deletionState is DeletionState.Error) {
+            snackbarHostState.showSnackbar(deletionState.message)
+            onDeletionSnackbarDismissed()
+        }
+        if (deletionState is DeletionState.Success) {
+            snackbarHostState.showSnackbar("Item deleted")
+            onDeletionSnackbarDismissed()
+        }
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             AppSearchBar(
                 query = query,
@@ -86,85 +110,94 @@ private fun FoodListContent(
         }
     ) { paddingValues ->
 
-        Surface(
+        Box(
             modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            color = MaterialTheme.colorScheme.background,
         ) {
-            LazyColumn(
-                modifier = modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(16.dp),
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background,
             ) {
-                if (uiState is FoodListUiState.Initial || (uiState is FoodListUiState.Loading && uiState.foodList.isEmpty())) {
-                    return@LazyColumn
-                }
-                fun foodListSectionOrEmpty(
-                    sectionTitle: String,
-                    emptyText: String,
-                    foodList: List<FoodUiModel>,
+                LazyColumn(
+                    modifier = modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(16.dp),
                 ) {
-                    if (uiState is FoodListUiState.Success && foodList.isEmpty()) {
-                        item {
-                            EmptyState(
-                                text = emptyText,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(8.dp)
-                            )
-                        }
+                    if (uiState is FoodListUiState.Initial || (uiState is FoodListUiState.Loading && uiState.foodList.isEmpty())) {
+                        return@LazyColumn
                     }
-                    if (uiState is FoodListUiState.Success && foodList.isNotEmpty()) {
-                        item {
-                            SectionHeader(sectionTitle)
-                        }
-                        itemsIndexed(
-                            foodList,
-                            key = { _, item -> item.id + item.name.hashCode() },
-                            contentType = { _, _ -> sectionTitle }
-                        ) { index, item ->
-                            FoodListItem(
-                                modifier = Modifier.fillMaxWidth(),
-                                item = item,
-                                onClick = { onItemClick(item.id) },
-                                onEditClick = { onEditClick(item.id) },
-                                onDeleteClick = { onItemDeleteClick(item.id) },
-                            )
-                            if (index != foodList.lastIndex) {
-                                HorizontalDivider(
-                                    thickness = 1.dp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                                        alpha = 0.2f
-                                    )
+                    fun foodListSectionOrEmpty(
+                        sectionTitle: String,
+                        emptyText: String,
+                        foodList: List<FoodUiModel>,
+                    ) {
+                        if (uiState is FoodListUiState.Success && foodList.isEmpty()) {
+                            item {
+                                EmptyState(
+                                    text = emptyText,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(8.dp)
                                 )
                             }
                         }
+                        if (uiState is FoodListUiState.Success && foodList.isNotEmpty()) {
+                            item {
+                                SectionHeader(sectionTitle)
+                            }
+                            itemsIndexed(
+                                foodList,
+                                key = { _, item -> item.id + item.name.hashCode() },
+                                contentType = { _, _ -> sectionTitle }
+                            ) { index, item ->
+                                FoodListItem(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    item = item,
+                                    onClick = { onItemClick(item.id) },
+                                    onEditClick = { onEditClick(item.id) },
+                                    onDeleteClick = { onItemDeleteClick(item.id) },
+                                )
+                                if (index != foodList.lastIndex) {
+                                    HorizontalDivider(
+                                        thickness = 1.dp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                            alpha = 0.2f
+                                        )
+                                    )
+                                }
+                            }
+                        }
                     }
-                }
-                foodListSectionOrEmpty(
-                    sectionTitle = "Saved foods",
-                    emptyText = "No saved foods",
-                    foodList = (uiState as? FoodListUiState.Success)?.savedFood ?: emptyList()
-                )
-                if (uiState is FoodListUiState.Success && uiState.searchedFood.isNotEmpty()) {
-                    item {
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 16.dp),
-                            thickness = 2.dp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                                alpha = 0.6f
+                    foodListSectionOrEmpty(
+                        sectionTitle = "Saved foods",
+                        emptyText = "No saved foods",
+                        foodList = (uiState as? FoodListUiState.Success)?.savedFood ?: emptyList()
+                    )
+                    if (uiState is FoodListUiState.Success && uiState.searchedFood.isNotEmpty()) {
+                        item {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(vertical = 16.dp),
+                                thickness = 2.dp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                    alpha = 0.6f
+                                )
                             )
-                        )
+                        }
                     }
+                    foodListSectionOrEmpty(
+                        sectionTitle = "Searched foods",
+                        emptyText = "No searched foods",
+                        foodList = (uiState as? FoodListUiState.Success)?.searchedFood
+                            ?: emptyList()
+                    )
                 }
-                foodListSectionOrEmpty(
-                    sectionTitle = "Searched foods",
-                    emptyText = "No searched foods",
-                    foodList = (uiState as? FoodListUiState.Success)?.searchedFood ?: emptyList()
-                )
+            }  // Surface
+
+            if (deletionState is DeletionState.InProgress) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
-        }
-    }
+        }  // Box
+    }  // Scaffold
 }
 
 
@@ -188,8 +221,8 @@ private fun SectionHeader(
 private fun FoodListItem(
     modifier: Modifier = Modifier,
     item: FoodUiModel,
-    onClick: () -> Unit,
-    onEditClick: () -> Unit,
+    onClick: () -> Unit = {},
+    onEditClick: () -> Unit = {},
     onDeleteClick: () -> Unit = {},
     showDialog: Boolean = false,
 ) {
@@ -386,12 +419,22 @@ private fun ErrorWithItems() {
 
 @Preview
 @Composable
-private fun Dialog() {
+private fun DeletingItem() {
+    NutritionTrackerTheme {
+        FoodListContent(
+            uiState = FoodListUiState.Success(previewItems1, previewItems2),
+            deletionState = DeletionState.InProgress
+        )
+
+    }
+}
+
+@Preview
+@Composable
+private fun DecisionDialog() {
     NutritionTrackerTheme {
         FoodListItem(
             item = FoodUiModel(1, "Apple", 52.0),
-            onClick = {},
-            onEditClick = {},
             showDialog = true,
         )
     }

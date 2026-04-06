@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.masalimov.nutritiontracker.domain.FoodSearchException
 import dev.masalimov.nutritiontracker.domain.food.Food
+import dev.masalimov.nutritiontracker.domain.food.FoodRepository
 import dev.masalimov.nutritiontracker.domain.food.usecase.GetFoodByQueryUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -13,11 +14,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @Immutable
@@ -39,18 +42,29 @@ sealed class FoodListUiState(
 }
 
 
+sealed class DeletionState {
+    data object Idle : DeletionState()
+    data object InProgress : DeletionState()
+    data object Success : DeletionState()
+    data class Error(val message: String) : DeletionState()
+}
+
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class FoodViewModel @Inject constructor(
     private val getFoodByQueryUseCase: GetFoodByQueryUseCase,
+    private val foodRepository: FoodRepository,
 ) : ViewModel() {
 
     private val _foodQuery: MutableStateFlow<String> = MutableStateFlow("")
+    private val _refreshTrigger: MutableStateFlow<Int> = MutableStateFlow(0)
 
-    val uiState: StateFlow<FoodListUiState> = _foodQuery
+    private val _deletionState = MutableStateFlow<DeletionState>(DeletionState.Idle)
+    val deletionState: StateFlow<DeletionState> = _deletionState.asStateFlow()
+
+    val uiState: StateFlow<FoodListUiState> = combine(_foodQuery, _refreshTrigger) { query, _ -> query }
         .debounce { if (it.isEmpty()) 0 else 300 }
         .map { it.trim() }
-        .distinctUntilChanged()
         .transformLatest { query ->
             emit(FoodListUiState.Loading(uiState.value.foodList))
 
@@ -81,7 +95,20 @@ class FoodViewModel @Inject constructor(
         _foodQuery.value = query
     }
     fun onItemDeleteClick(foodId: Long) {
-        // TODO: delete food
+        viewModelScope.launch {
+            _deletionState.value = DeletionState.InProgress
+            try {
+                foodRepository.deleteFood(foodId)
+                _deletionState.value = DeletionState.Success
+                _refreshTrigger.value++
+            } catch (e: Throwable) {
+                _deletionState.value = DeletionState.Error(e.message ?: "Failed to delete food")
+            }
+        }
+    }
+
+    fun onDeletionSnackbarDismissed() {
+        _deletionState.value = DeletionState.Idle
     }
 }
 

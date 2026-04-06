@@ -23,4 +23,7 @@ interface FoodDao {
 
     @Query("SELECT * FROM FoodEntity")
     fun getAllStream(): Flow<List<FoodEntity>>
+
+    @Query("DELETE FROM FoodEntity WHERE uid = :foodId")
+    suspend fun deleteById(foodId: Long)
 }

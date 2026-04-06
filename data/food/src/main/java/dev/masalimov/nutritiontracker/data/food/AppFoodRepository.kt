@@ -6,6 +6,7 @@ import dev.masalimov.nutritiontracker.data.food.datasource.FoodRemoteDataSource
 import dev.masalimov.nutritiontracker.domain.food.Food
 import dev.masalimov.nutritiontracker.domain.food.FoodId
 import dev.masalimov.nutritiontracker.domain.food.FoodRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -35,5 +36,10 @@ internal class AppFoodRepository @Inject constructor(
 
     override suspend fun searchFood(query: String): List<Food> {
         return foodRemoteDataSource.searchFood(query).map(FoodApiModel::toFood)
+    }
+
+    override suspend fun deleteFood(foodId: Long) {
+        delay(1000)
+        foodDao.deleteById(foodId)
     }
 }
