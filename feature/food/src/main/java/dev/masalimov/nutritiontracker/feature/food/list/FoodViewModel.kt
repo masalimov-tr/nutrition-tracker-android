@@ -6,13 +6,14 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.masalimov.nutritiontracker.domain.FoodSearchException
 import dev.masalimov.nutritiontracker.domain.food.Food
-import dev.masalimov.nutritiontracker.domain.food.usecase.GetSavedAndSearchFoodUseCase
+import dev.masalimov.nutritiontracker.domain.food.usecase.GetFoodByQueryUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -41,12 +42,13 @@ sealed class FoodListUiState(
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class FoodViewModel @Inject constructor(
-    private val getSavedAndSearchFoodUseCase: GetSavedAndSearchFoodUseCase
+    private val getFoodByQueryUseCase: GetFoodByQueryUseCase,
 ) : ViewModel() {
 
     private val _foodQuery: MutableStateFlow<String> = MutableStateFlow("")
 
     val uiState: StateFlow<FoodListUiState> = _foodQuery
+        .debounce { if (it.isEmpty()) 0 else 300 }
         .map { it.trim() }
         .distinctUntilChanged()
         .transformLatest { query ->
@@ -56,7 +58,7 @@ class FoodViewModel @Inject constructor(
                 delay(300) // debounce
 
             try {
-                val (savedFood, searchedFood) = getSavedAndSearchFoodUseCase(query)
+                val (savedFood, searchedFood) = getFoodByQueryUseCase(query)
                 emit(
                     FoodListUiState.Success(
                         savedFood = savedFood.map(Food::toUiModel),

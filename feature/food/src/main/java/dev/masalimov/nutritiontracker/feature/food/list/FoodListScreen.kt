@@ -87,9 +87,6 @@ private fun FoodListContent(
                     emptyText: String,
                     foodList: List<FoodUiModel>,
                 ) {
-                    item {
-                        SectionHeader(sectionTitle)
-                    }
                     if (uiState is FoodListUiState.Success && foodList.isEmpty()) {
                         item {
                             EmptyState(
@@ -101,9 +98,12 @@ private fun FoodListContent(
                         }
                     }
                     if (uiState is FoodListUiState.Success && foodList.isNotEmpty()) {
+                        item {
+                            SectionHeader(sectionTitle)
+                        }
                         itemsIndexed(
                             foodList,
-                            key = { _, item -> item.id },
+                            key = { _, item -> item.id + item.name.hashCode() },
                             contentType = { _, _ -> sectionTitle }
                         ) { index, item ->
                             FoodListItem(
@@ -127,6 +127,15 @@ private fun FoodListContent(
                     emptyText = "No saved foods",
                     foodList = (uiState as? FoodListUiState.Success)?.savedFood ?: emptyList()
                 )
+                item {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 16.dp),
+                        thickness = 2.dp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                            alpha = 0.6f
+                        )
+                    )
+                }
                 foodListSectionOrEmpty(
                     sectionTitle = "Searched foods",
                     emptyText = "No searched foods",
@@ -146,7 +155,7 @@ private fun SectionHeader(
     Text(
         modifier = modifier.padding(vertical = 8.dp),
         text = text,
-        style = MaterialTheme.typography.labelMedium.copy(
+        style = MaterialTheme.typography.titleMedium.copy(
             fontWeight = FontWeight.Bold
         ),
         color = MaterialTheme.colorScheme.onPrimaryContainer,
