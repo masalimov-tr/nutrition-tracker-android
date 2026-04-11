@@ -10,12 +10,21 @@ import kotlinx.datetime.todayIn
 data class DiaryDate(
     val date: LocalDate,
 ) {
+    
     fun plusDays(days: Int): DiaryDate =
         DiaryDate(date.plus(days, DateTimeUnit.DAY))
 
     fun nextDay(): DiaryDate = plusDays(1)
 
     fun previousDay(): DiaryDate = plusDays(-1)
+
+    operator fun rangeTo(other: DiaryDate): Iterable<DiaryDate> {
+        val forward = this.date <= other.date
+        return generateSequence(this) { current ->
+            if (current.date == other.date) null
+            else if (forward) current.nextDay() else current.previousDay()
+        }.asIterable()
+    }
 
     companion object {
         fun today(timeZone: TimeZone = TimeZone.currentSystemDefault()): DiaryDate =

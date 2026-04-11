@@ -7,31 +7,23 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-/**
- * A use case to determine the calorie consumption status for a specific diary date.
- *
- * This class retrieves diary entries from the repository and evaluates whether the calorie goal for a given date
- * has been met, exceeded, or is unknown. It processes data reactively using Kotlin Flows.
- *
- * @property diaryRepository The repository that stores diary entries with calorie intake information.
- */
-class GetCaloriesConsumptionPerDateUseCase @Inject constructor(
+class GetCaloriesConsumptionForDateUseCase @Inject constructor(
     private val diaryRepository: DiaryRepository,
 ) {
 
     /**
-     * Retrieves the calorie consumption status for a specific date as a Flow.
+     * Retrieves a stream of calorie consumption status for a specific date.
      *
-     * The function accesses all diary entries as a flow, searches for the entry matching the
-     * provided date, and calculates its consumption status based on the calorie goal and actual value.
-     * If no record exists for the given date, the status is marked as `Unknown`.
+     * This function queries the diary repository for diary data associated with the given date,
+     * and calculates the calorie consumption status using the daily calorie goal and the actual
+     * calories consumed. If no diary entry exists for the provided date, the status is set to `Unknown`.
      *
-     * @param date The target date for which calorie consumption status is calculated.
-     * @return A Flow emitting the `CalorieConsumptionStatus` for the given date.
+     * @param date The date for which the calorie consumption status is to be retrieved.
+     * @return A [Flow] emitting the [CalorieConsumptionStatus] for the specified date. The status can be one of `Over`,
+     * `NotOver`, or `Unknown` depending on the retrieved data.
      */
     operator fun invoke(date: DiaryDate): Flow<CalorieConsumptionStatus> {
-        return diaryRepository.getAllDiaryEntriesFlow().map { diaryEntries ->
-            val diaryEntry = diaryEntries.find { it.date == date }
+        return diaryRepository.getDiaryByDateFlow(date).map { diaryEntry ->
             diaryEntry?.let {
                 getConsumptionStatus(it.goalCaloriesPerDay, it.caloriesEaten)
             } ?: CalorieConsumptionStatus.Unknown
