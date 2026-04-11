@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class GetCaloryConsumptionForDateRangeUseCase @Inject constructor(
+class GetCaloriesConsumptionForDateRangeUseCase @Inject constructor(
     private val getCaloriesConsumptionForDateUseCase: GetCaloriesConsumptionForDateUseCase,
 ) {
     /**

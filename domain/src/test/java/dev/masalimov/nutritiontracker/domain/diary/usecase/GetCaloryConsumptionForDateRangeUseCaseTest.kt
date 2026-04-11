@@ -18,12 +18,12 @@ class GetCaloryConsumptionForDateRangeUseCaseTest {
 
     @MockK
     private lateinit var getCaloriesConsumptionForDateUseCase: GetCaloriesConsumptionForDateUseCase
-    private lateinit var sut: GetCaloryConsumptionForDateRangeUseCase
+    private lateinit var sut: GetCaloriesConsumptionForDateRangeUseCase
 
     @Before
     fun setUp() {
         MockKAnnotations.init(this)
-        sut = GetCaloryConsumptionForDateRangeUseCase(getCaloriesConsumptionForDateUseCase)
+        sut = GetCaloriesConsumptionForDateRangeUseCase(getCaloriesConsumptionForDateUseCase)
     }
 
     @Test

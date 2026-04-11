@@ -28,7 +28,7 @@ import org.junit.Rule
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class DiaryViewModelIsolatedTest {
+class DiaryViewModelTest {
 
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
