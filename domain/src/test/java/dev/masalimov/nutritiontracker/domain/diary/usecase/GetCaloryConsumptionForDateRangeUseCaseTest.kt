@@ -7,8 +7,8 @@ import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import junit.framework.TestCase.assertEquals
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import org.junit.Before
@@ -41,21 +41,21 @@ class GetCaloryConsumptionForDateRangeUseCaseTest {
         every { getCaloriesConsumptionForDateUseCase.invoke(date3) } returns flowOf(
             CalorieConsumptionStatus.Unknown
         )
-        val result = sut(date1, date3).toList()
+        val result = sut(date1, date3).first()
         val expected = listOf(
             Pair(date1,CalorieConsumptionStatus.Over),
             Pair(date2,CalorieConsumptionStatus.NotOver),
             Pair(date3,CalorieConsumptionStatus.Unknown),
         )
-        assertEquals(true, result.containsAll(expected))
+        assertEquals(expected, result)
 
         // Reverse order
-        val result2 = sut(date3, date1).toList()
-        assertEquals(true, result2.containsAll(expected))
+        val resultReversed = sut(date3, date1).first()
+        assertEquals(expected.asReversed(), resultReversed)
 
         // One element range
-        val resultOneElement = sut(date1, date1).toList()
+        val resultOneElement = sut(date1, date1).first()
         assertEquals(1, resultOneElement.size)
-        assertEquals(true, resultOneElement[0] == Pair(date1,CalorieConsumptionStatus.Over))
+        assertEquals(expected.take(1), resultOneElement)
     }
 }

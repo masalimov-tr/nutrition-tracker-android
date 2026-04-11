@@ -182,7 +182,7 @@ private fun AddFoodLoading() {
 
 private val diaryUiStatePreview = DiaryUiState(
     isLoading = false,
-    dateList = calendar,
+    dateList = uiDateList,
     eatenFoodList = listOf(
         EatenFoodUiModel(
             name = "Chicken breast",

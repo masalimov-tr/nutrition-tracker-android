@@ -4,9 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.masalimov.nutritiontracker.domain.GoalCalories
+import dev.masalimov.nutritiontracker.domain.diary.CalorieConsumptionStatus
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
 import dev.masalimov.nutritiontracker.domain.diary.usecase.AddFoodToDiaryUseCase
-import dev.masalimov.nutritiontracker.domain.diary.usecase.GetCaloriesConsumptionForDateUseCase
+import dev.masalimov.nutritiontracker.domain.diary.usecase.GetCaloriesConsumptionForDateRangeUseCase
 import dev.masalimov.nutritiontracker.domain.diary.usecase.GetDiaryStreamForDateUseCase
 import dev.masalimov.nutritiontracker.domain.food.Food
 import kotlinx.coroutines.CoroutineDispatcher
@@ -30,10 +31,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DiaryViewModel @Inject constructor(
-    private val getCaloriesConsumptionPerDateUseCase: GetCaloriesConsumptionForDateUseCase,
+    private val getCaloriesConsumptionForDateRangeUseCase: GetCaloriesConsumptionForDateRangeUseCase,
     private val getDiaryStreamForDateUseCase: GetDiaryStreamForDateUseCase,
     private val addFoodToDiaryUseCase: AddFoodToDiaryUseCase,
     private val goalCalories: GoalCalories,
+    private val diaryDateToShow: List<DiaryDate> = diaryDateCalendar,
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ViewModel() {
 
@@ -47,13 +49,16 @@ class DiaryViewModel @Inject constructor(
         .distinctUntilChanged { prev, next -> prev.date == next.date }
         .flatMapLatest { selectedDate: DiaryDate ->
             getDiaryStreamForDateUseCase(selectedDate)
-                .combine(getCaloriesConsumptionPerDateUseCase(selectedDate)) { diaryInfoForDate, caloriesConsumptionPerDate ->
-                    diaryInfoForDate to caloriesConsumptionPerDate
+                .combine(getCaloriesConsumptionForDateRangeUseCase(diaryDateToShow.first(), diaryDateToShow.last())) { diaryInfoForDate, caloriesConsumptionsList ->
+                    diaryInfoForDate to caloriesConsumptionsList
                 }
-                .map { (diaryInfoForDate, caloriesConsumptionPerDate) ->
+                .map { (diaryInfoForDate, caloriesConsumptionsList) ->
                     DiaryUiState(
-                        dateList = uiState.value.dateList.map { currentDate ->
-                            currentDate.copy(calorieConsumptionStatus = caloriesConsumptionPerDate)
+                        dateList = uiState.value.dateList.map { dateUiModel ->
+                            val status = caloriesConsumptionsList.find { it.first == dateUiModel.date }?.second
+                            dateUiModel.copy(
+                                calorieConsumptionStatus = status ?: CalorieConsumptionStatus.Unknown,
+                            )
                         },
                         caloriesEatenTotal = diaryInfoForDate.diaryEntryForDate?.caloriesEaten ?: 0,
                         eatenFoodList = diaryInfoForDate.diaryEntryForDate?.eatenFood?.map { it.toEatenFoodUiModel() }
@@ -83,7 +88,9 @@ class DiaryViewModel @Inject constructor(
                 }
                 .flowOn(defaultDispatcher)
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DiaryUiState.loading())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DiaryUiState.loading(
+            diaryDateToShow.map { DateUiModel(it) }
+        ))
 
     fun onSelectDate(date: DiaryDate) {
         _selectedDate.value = date

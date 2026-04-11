@@ -4,8 +4,7 @@ import dev.masalimov.nutritiontracker.domain.diary.CalorieConsumptionStatus
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -25,13 +24,20 @@ class GetCaloriesConsumptionForDateRangeUseCase @Inject constructor(
      * @return A [Flow] emitting pairs of [DiaryDate] and [CalorieConsumptionStatus] for each date in the range.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    operator fun invoke(startDate: DiaryDate, endDate: DiaryDate): Flow<Pair<DiaryDate,CalorieConsumptionStatus>> {
-      return (startDate..endDate)
-          .asFlow()
-          .flatMapMerge { date ->
-              getCaloriesConsumptionForDateUseCase(date).map {
-                  date to it
-              }
-          }
+    operator fun invoke(
+        startDate: DiaryDate,
+        endDate: DiaryDate
+    ): Flow<List<Pair<DiaryDate, CalorieConsumptionStatus>>> {
+        val dates = (startDate..endDate).toList()
+
+        val flows = dates.map { date ->
+            getCaloriesConsumptionForDateUseCase(date).map { status ->
+                date to status
+            }
+        }
+
+        return combine(flows) {
+            it.toList()
+        }
     }
 }
