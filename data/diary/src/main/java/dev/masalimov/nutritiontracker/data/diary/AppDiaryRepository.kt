@@ -5,8 +5,8 @@ import dev.masalimov.nutritiontracker.core.database.diary.DiaryEntity
 import dev.masalimov.nutritiontracker.core.database.diary.DiaryEntryFoodCrossRef
 import dev.masalimov.nutritiontracker.domain.GoalCalories
 import dev.masalimov.nutritiontracker.domain.diary.DiaryRepository
-import dev.masalimov.nutritiontracker.domain.diary.model.Diary
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
+import dev.masalimov.nutritiontracker.domain.diary.model.DiaryEntryForDate
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -17,14 +17,14 @@ internal class AppDiaryRepository @Inject constructor(
     private val goalCalories: GoalCalories,
 ) : DiaryRepository {
 
-    override fun getDiaryByDateFlow(date: DiaryDate): Flow<Diary?> {
+    override fun getDiaryByDateFlow(date: DiaryDate): Flow<DiaryEntryForDate?> {
         return diaryDao.getDiaryForDateFlow(date.toEpochDay()).map { dbModel ->
             dbModel?.toDiary(date)
         }
 
     }
 
-    override fun getAllDiaryEntriesFlow(): Flow<List<Diary>> {
+    override fun getAllDiaryEntriesFlow(): Flow<List<DiaryEntryForDate>> {
         return diaryDao.getAllDiaryEntriesFlow().map {
             it.map { it.toDiary(DiaryDate.of(it.diaryEntry.dateEpochDay)) }
         }

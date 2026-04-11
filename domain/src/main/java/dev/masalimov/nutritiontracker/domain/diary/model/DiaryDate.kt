@@ -8,7 +8,7 @@ import kotlinx.datetime.plus
 import kotlinx.datetime.todayIn
 
 data class DiaryDate(
-    val date: LocalDate
+    val date: LocalDate,
 ) {
     fun plusDays(days: Int): DiaryDate =
         DiaryDate(date.plus(days, DateTimeUnit.DAY))

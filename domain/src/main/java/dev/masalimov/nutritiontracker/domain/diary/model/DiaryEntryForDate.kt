@@ -14,7 +14,7 @@ data class EatenFood(
         get() = (quantityGram / 100 * food.caloriesPer100g).toInt()
 }
 
-data class Diary(
+data class DiaryEntryForDate(
     val id: DiaryId,
     val date: DiaryDate,
     val eatenFood: List<EatenFood>,
