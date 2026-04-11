@@ -6,7 +6,7 @@ import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
 
 private val today = DiaryDate.today()
 internal val calendar: List<DateUiModel> = (-7..7).map {
-    DateUiModel(today.plusDays(it), isSelected = it == 0)
+    DateUiModel(today.plusDays(it))
 }
 
 data class DiaryUiState(
@@ -16,6 +16,7 @@ data class DiaryUiState(
     val suggestedFoodList: List<SuggestedFoodUiModel> = emptyList(),
     val caloriesEatenTotal: Int? = null,
     val goalCaloriesPerDay: Int? = null,
+    val error: String? = null,
 ) {
     companion object {
         fun loading() = DiaryUiState(isLoading = true)
@@ -24,7 +25,7 @@ data class DiaryUiState(
 
 data class DateUiModel(
     val date: DiaryDate,
-    val isSelected: Boolean,
+    val isSelected: Boolean = false,
     val calorieConsumptionStatus: CalorieConsumptionStatus = CalorieConsumptionStatus.Unknown,
 )
 

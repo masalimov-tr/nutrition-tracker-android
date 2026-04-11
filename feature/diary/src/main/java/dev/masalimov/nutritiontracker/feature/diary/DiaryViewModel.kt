@@ -6,7 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.masalimov.nutritiontracker.domain.GoalCalories
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
 import dev.masalimov.nutritiontracker.domain.diary.usecase.AddFoodToDiaryUseCase
-import dev.masalimov.nutritiontracker.domain.diary.usecase.GetCaloriesConsumptionPerDateUseCase
+import dev.masalimov.nutritiontracker.domain.diary.usecase.GetCaloriesConsumptionForDateUseCase
 import dev.masalimov.nutritiontracker.domain.diary.usecase.GetDiaryStreamForDateUseCase
 import dev.masalimov.nutritiontracker.domain.food.Food
 import kotlinx.coroutines.CoroutineDispatcher
@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
@@ -29,7 +30,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DiaryViewModel @Inject constructor(
-    private val getCaloriesConsumptionPerDateUseCase: GetCaloriesConsumptionPerDateUseCase,
+    private val getCaloriesConsumptionPerDateUseCase: GetCaloriesConsumptionForDateUseCase,
     private val getDiaryStreamForDateUseCase: GetDiaryStreamForDateUseCase,
     private val addFoodToDiaryUseCase: AddFoodToDiaryUseCase,
     private val goalCalories: GoalCalories,
@@ -44,9 +45,9 @@ class DiaryViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<DiaryUiState> = _selectedDate
         .distinctUntilChanged { prev, next -> prev.date == next.date }
-        .flatMapLatest { date: DiaryDate ->
-            getDiaryStreamForDateUseCase(date)
-                .combine(getCaloriesConsumptionPerDateUseCase(date)) { diaryInfoForDate, caloriesConsumptionPerDate ->
+        .flatMapLatest { selectedDate: DiaryDate ->
+            getDiaryStreamForDateUseCase(selectedDate)
+                .combine(getCaloriesConsumptionPerDateUseCase(selectedDate)) { diaryInfoForDate, caloriesConsumptionPerDate ->
                     diaryInfoForDate to caloriesConsumptionPerDate
                 }
                 .map { (diaryInfoForDate, caloriesConsumptionPerDate) ->
@@ -67,13 +68,20 @@ class DiaryViewModel @Inject constructor(
                     val loadingState = DiaryUiState(
                         isLoading = true,
                         dateList = uiState.value.dateList.map { dateUiModel ->
-                            dateUiModel.copy(isSelected = dateUiModel.date == date)
+                            dateUiModel.copy(isSelected = dateUiModel.date == selectedDate)
                         },
                     )
                     emit(loadingState)
                 }
+                .catch { e ->
+                    emit(
+                        uiState.value.copy(
+                            isLoading = false,
+                            error = e.message ?: "Failed to load diary data",
+                        )
+                    )
+                }
                 .flowOn(defaultDispatcher)
-
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DiaryUiState.loading())
 

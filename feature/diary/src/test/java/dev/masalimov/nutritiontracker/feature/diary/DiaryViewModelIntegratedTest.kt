@@ -7,7 +7,7 @@ import dev.masalimov.nutritiontracker.domain.diary.model.DiaryEntryForDate
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryId
 import dev.masalimov.nutritiontracker.domain.diary.model.EatenFood
 import dev.masalimov.nutritiontracker.domain.diary.usecase.AddFoodToDiaryUseCase
-import dev.masalimov.nutritiontracker.domain.diary.usecase.GetCaloriesConsumptionPerDateUseCase
+import dev.masalimov.nutritiontracker.domain.diary.usecase.GetCaloriesConsumptionForDateUseCase
 import dev.masalimov.nutritiontracker.domain.diary.usecase.GetDiaryStreamForDateUseCase
 import dev.masalimov.nutritiontracker.domain.food.Food
 import dev.masalimov.nutritiontracker.domain.food.FoodId
@@ -35,7 +35,7 @@ class DiaryViewModelIntegratedTest {
         foodRepository: FoodRepository,
         goalCaloriesPerDay: Int = 1500,
     ): DiaryViewModel {
-        val getCaloriesConsumptionPerDate = GetCaloriesConsumptionPerDateUseCase(diaryRepository)
+        val getCaloriesConsumptionPerDate = GetCaloriesConsumptionForDateUseCase(diaryRepository)
         val getDiaryStreamForDate = GetDiaryStreamForDateUseCase(diaryRepository, foodRepository)
         val addFoodToDiary = AddFoodToDiaryUseCase(diaryRepository)
         val goalCalories = GoalCalories()
