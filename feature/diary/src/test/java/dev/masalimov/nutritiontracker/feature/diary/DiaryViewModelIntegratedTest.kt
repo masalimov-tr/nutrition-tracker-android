@@ -2,8 +2,8 @@ package dev.masalimov.nutritiontracker.feature.diary
 
 import dev.masalimov.nutritiontracker.domain.GoalCalories
 import dev.masalimov.nutritiontracker.domain.diary.DiaryRepository
-import dev.masalimov.nutritiontracker.domain.diary.model.Diary
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
+import dev.masalimov.nutritiontracker.domain.diary.model.DiaryEntryForDate
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryId
 import dev.masalimov.nutritiontracker.domain.diary.model.EatenFood
 import dev.masalimov.nutritiontracker.domain.diary.usecase.AddFoodToDiaryUseCase
@@ -25,7 +25,7 @@ import org.junit.Rule
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class DiaryViewModelTest {
+class DiaryViewModelIntegratedTest {
 
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
@@ -74,7 +74,7 @@ class DiaryViewModelTest {
         assertTrue(state.dateList.any { it.date == today && it.isSelected })
     }
 
-    private fun getFakeDiary(today: DiaryDate): Diary {
+    private fun getFakeDiary(today: DiaryDate): DiaryEntryForDate {
         val apple = Food(
             FoodId(1),
             name = "Apple",
@@ -84,7 +84,7 @@ class DiaryViewModelTest {
             carbsPer100g = 25.0
         )
         val eaten = listOf(EatenFood(quantityGram = 200.0, food = apple)) // 200 kcal
-        val diary = Diary(DiaryId(1), date = today, eatenFood = eaten, goalCaloriesPerDay = 1800)
+        val diary = DiaryEntryForDate(DiaryId(1), date = today, eatenFood = eaten, goalCaloriesPerDay = 1800)
         return diary
     }
 
@@ -163,13 +163,13 @@ class DiaryViewModelTest {
 
 
     private class FakeDiaryRepository : DiaryRepository {
-        private val byDate = mutableMapOf<DiaryDate, MutableStateFlow<Diary?>>()
-        private val all = MutableStateFlow<List<Diary>>(emptyList())
+        private val byDate = mutableMapOf<DiaryDate, MutableStateFlow<DiaryEntryForDate?>>()
+        private val all = MutableStateFlow<List<DiaryEntryForDate>>(emptyList())
 
         val addCalls = mutableListOf<Triple<Long, DiaryDate, Double>>()
         private var shouldFailNextAdd = false
 
-        fun setDiary(date: DiaryDate, diary: Diary?) {
+        fun setDiary(date: DiaryDate, diary: DiaryEntryForDate?) {
             val flow = byDate.getOrPut(date) { MutableStateFlow(null) }
             flow.value = diary
             all.update { byDate.values.mapNotNull { it.value } }
@@ -179,11 +179,11 @@ class DiaryViewModelTest {
             shouldFailNextAdd = true
         }
 
-        override fun getDiaryByDateFlow(date: DiaryDate): Flow<Diary?> {
+        override fun getDiaryByDateFlow(date: DiaryDate): Flow<DiaryEntryForDate?> {
             return byDate.getOrPut(date) { MutableStateFlow(null) }
         }
 
-        override fun getAllDiaryEntriesFlow(): Flow<List<Diary>> = all
+        override fun getAllDiaryEntriesFlow(): Flow<List<DiaryEntryForDate>> = all
 
         override suspend fun addFoodToDiary(foodId: Long, date: DiaryDate, quantityGrams: Double) {
             addCalls += Triple(foodId, date, quantityGrams)

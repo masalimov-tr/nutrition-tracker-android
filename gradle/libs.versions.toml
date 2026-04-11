@@ -24,6 +24,7 @@ navigationCompose = "2.8.5"
 kotlinxDatetime = "0.6.1"
 room = "2.6.1"
 material3 = "1.4.0"
+mockk = "1.13.12"
 
 [libraries]
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
@@ -59,6 +60,7 @@ androidxHiltNavigationCompose = { group = "androidx.hilt", name = "hilt-navigati
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
