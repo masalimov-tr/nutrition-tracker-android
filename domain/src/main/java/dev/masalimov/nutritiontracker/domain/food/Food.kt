@@ -8,3 +8,12 @@ data class Food(
     val fatPer100g: Double,
     val carbsPer100g: Double,
 )
+
+val exampleFood = Food(
+    FoodId(1),
+    name = "Apple",
+    caloriesPer100g = 100.0,
+    proteinPer100g = 10.0,
+    fatPer100g = 0.5,
+    carbsPer100g = 50.0,
+)

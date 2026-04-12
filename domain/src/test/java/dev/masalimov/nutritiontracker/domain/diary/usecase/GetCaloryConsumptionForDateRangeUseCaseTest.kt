@@ -42,7 +42,7 @@ class GetCaloryConsumptionForDateRangeUseCaseTest {
             CalorieConsumptionStatus.Unknown
         )
         val result = sut(date1, date3).first()
-        val expected = listOf(
+        val expected = mapOf(
             Pair(date1,CalorieConsumptionStatus.Over),
             Pair(date2,CalorieConsumptionStatus.NotOver),
             Pair(date3,CalorieConsumptionStatus.Unknown),
@@ -51,11 +51,11 @@ class GetCaloryConsumptionForDateRangeUseCaseTest {
 
         // Reverse order
         val resultReversed = sut(date3, date1).first()
-        assertEquals(expected.asReversed(), resultReversed)
+        assertEquals(expected, resultReversed)
 
         // One element range
         val resultOneElement = sut(date1, date1).first()
         assertEquals(1, resultOneElement.size)
-        assertEquals(expected.take(1), resultOneElement)
+        assertEquals(expected.filter { it.key == date1 }, resultOneElement)
     }
 }

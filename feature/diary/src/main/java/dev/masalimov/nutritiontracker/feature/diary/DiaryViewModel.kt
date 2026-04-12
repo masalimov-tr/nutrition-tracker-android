@@ -53,18 +53,16 @@ class DiaryViewModel @Inject constructor(
                         diaryDateCalendar.dates.first(),
                         diaryDateCalendar.dates.last()
                     )
-                ) { diaryInfoForDate, caloriesConsumptionsList ->
-                    diaryInfoForDate to caloriesConsumptionsList
+                ) { diaryInfoForDate, caloriesConsumptionsMap ->
+                    diaryInfoForDate to caloriesConsumptionsMap
                 }
-                .map { (diaryInfoForDate, caloriesConsumptionsList) ->
+                .map { (diaryInfoForDate, caloriesConsumptionsMap) ->
                     DiaryUiState(
-                        dateList = uiState.value.dateList.map { dateUiModel ->
-                            val status =
-                                caloriesConsumptionsList.find { it.first == dateUiModel.date }?.second
-                            dateUiModel.copy(
-                                calorieConsumptionStatus = status
-                                    ?: CalorieConsumptionStatus.Unknown,
-                            )
+                        dateList = uiState.value.dateList.map { it ->
+                            val statusForDate = caloriesConsumptionsMap.getOrElse(it.date) {
+                                CalorieConsumptionStatus.Unknown
+                            }
+                            it.copy(calorieConsumptionStatus = statusForDate)
                         },
                         caloriesEatenTotal = diaryInfoForDate.diaryEntryForDate?.caloriesEaten ?: 0,
                         eatenFoodList = diaryInfoForDate.diaryEntryForDate?.eatenFood?.map { it.toEatenFoodUiModel() }

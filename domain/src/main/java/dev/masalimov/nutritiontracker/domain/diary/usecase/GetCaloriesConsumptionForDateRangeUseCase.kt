@@ -12,22 +12,22 @@ class GetCaloriesConsumptionForDateRangeUseCase @Inject constructor(
     private val getCaloriesConsumptionForDateUseCase: GetCaloriesConsumptionForDateUseCase,
 ) {
     /**
-     * Retrieves a flow that emits pairs of dates and their associated calorie consumption statuses
-     * over a specified date range.
+     * Retrieves a stream of calorie consumption statuses for a date range.
      *
-     * This method generates all dates within the range from `startDate` to `endDate` and, for each date,
-     * queries the calorie consumption status. The result is a flow of pairs where each pair contains a date
-     * and its corresponding calorie consumption status, which can either be `Unknown`, `Over`, or `NotOver`.
+     * This function takes a range of dates and calculates the calorie consumption status for each date
+     * by invoking the `getCaloriesConsumptionForDateUseCase`. The results are combined into a map where each
+     * key is a date and its corresponding value is the calorie consumption status for that date.
      *
-     * @param startDate The starting date of the range (inclusive).
-     * @param endDate The ending date of the range (inclusive).
-     * @return A [Flow] emitting pairs of [DiaryDate] and [CalorieConsumptionStatus] for each date in the range.
+     * @param startDate The start date of the range for which to calculate the calorie consumption statuses.
+     * @param endDate The end date of the range for which to calculate the calorie consumption statuses.
+     * @return A [Flow] emitting a map where the key is a [DiaryDate] and the value is the corresponding
+     * [CalorieConsumptionStatus] for that date.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     operator fun invoke(
         startDate: DiaryDate,
         endDate: DiaryDate
-    ): Flow<List<Pair<DiaryDate, CalorieConsumptionStatus>>> {
+    ): Flow<Map<DiaryDate, CalorieConsumptionStatus>> {
         val dates = (startDate..endDate).toList()
 
         val flows = dates.map { date ->
@@ -37,7 +37,7 @@ class GetCaloriesConsumptionForDateRangeUseCase @Inject constructor(
         }
 
         return combine(flows) {
-            it.toList()
+            it.toMap()
         }
     }
 }

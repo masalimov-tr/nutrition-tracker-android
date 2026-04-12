@@ -7,15 +7,18 @@ import dev.masalimov.nutritiontracker.domain.diary.CalorieConsumptionStatus
 import dev.masalimov.nutritiontracker.domain.diary.model.CompleteDiaryInformationForDate
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDateCalendar
+import dev.masalimov.nutritiontracker.domain.diary.model.DiaryEntryForDate
+import dev.masalimov.nutritiontracker.domain.diary.model.DiaryId
+import dev.masalimov.nutritiontracker.domain.diary.model.EatenFood
 import dev.masalimov.nutritiontracker.domain.diary.usecase.AddFoodToDiaryUseCase
 import dev.masalimov.nutritiontracker.domain.diary.usecase.GetCaloriesConsumptionForDateRangeUseCase
 import dev.masalimov.nutritiontracker.domain.diary.usecase.GetDiaryStreamForDateUseCase
+import dev.masalimov.nutritiontracker.domain.food.exampleFood
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.verify
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -48,7 +51,7 @@ class DiaryViewModelTest {
     @MockK
     lateinit var addFoodToDiaryUseCase: AddFoodToDiaryUseCase
 
-    @RelaxedMockK
+    @MockK
     lateinit var goalCalories: GoalCalories
 
     @MockK
@@ -57,15 +60,25 @@ class DiaryViewModelTest {
     lateinit var diaryViewModel: DiaryViewModel
 
     private val startingDate = DiaryDate.today()
+
+    private fun testDiaryEntryForDate(date: DiaryDate) = DiaryEntryForDate(
+        id = DiaryId(1),
+        date = date,
+        eatenFood = listOf(
+            EatenFood(100.0, exampleFood),
+        ),
+        goalCaloriesPerDay = goalCalories.caloriesPerDay,
+    )
     @Before
     fun setUp() {
         MockKAnnotations.init(this)
         every { getDiaryStreamForDateUseCase.invoke(any()) } returns flowOf(
             CompleteDiaryInformationForDate.EMPTY
         )
-        every { getCaloriesConsumptionForDateRangeUseCase.invoke(any(), any()) } returns flowOf(emptyList())
+        every { getCaloriesConsumptionForDateRangeUseCase.invoke(any(), any()) } returns flowOf(emptyMap())
         every { diaryDateCalendar.dates } returns listOf(startingDate)
         every { diaryDateCalendar.startingDate } returns startingDate
+        every { goalCalories.caloriesPerDay } returns 2000
 
         initializeViewModel()
     }
@@ -211,28 +224,62 @@ class DiaryViewModelTest {
         val dateError = dateSuccess.plusDays(1)
 
         every { getDiaryStreamForDateUseCase.invoke(dateSuccess) } returns flowOf(
-            CompleteDiaryInformationForDate.EMPTY
+            CompleteDiaryInformationForDate(
+                diaryEntryForDate = testDiaryEntryForDate(dateSuccess),
+                emptyList(),
+            )
         )
         every { getDiaryStreamForDateUseCase.invoke(dateError) } returns flow {
             throw IllegalStateException("fail diary")
         }
 
+        every { diaryDateCalendar.startingDate } returns dateSuccess
+
+        initializeViewModel()
+
         diaryViewModel.uiState.test {
             // loading -> success
-            assertTrue(awaitItem().isLoading) // initial
-            assertTrue(awaitItem().isLoading) // loading
-            assertFalse(awaitItem().isLoading) // success
+
+            val initialState = awaitItem()
+            assertTrue(initialState.isLoading) // initial
+            assertTrue(initialState.eatenFoodList.isEmpty()) // initial
+            assertTrue(initialState.dateList.isEmpty()) // initial
+
+            val loadingState1 = awaitItem()
+            assertTrue(loadingState1.isLoading) // loading
+            assertTrue(loadingState1.eatenFoodList.isEmpty()) // loading
+            assertTrue(loadingState1.dateList.isNotEmpty()) // loading
+
+            val successState1 = awaitItem()
+            assertFalse(successState1.isLoading) // success
+            assertTrue(successState1.error == null) // success
+            assertTrue(successState1.eatenFoodList.isNotEmpty()) // success
+            assertTrue(successState1.dateList.isNotEmpty()) // success
 
 
             // loading -> error
             diaryViewModel.onSelectDate(dateError)
-            assertTrue(awaitItem().isLoading) // loading
-            assertTrue(awaitItem().error != null) // error
+
+            val loadingState2 = awaitItem()
+            assertTrue(loadingState2.isLoading) // loading
+            assertTrue(loadingState2.eatenFoodList.isEmpty()) // loading
+
+            val stateError2 = awaitItem()
+            assertTrue(stateError2.error != null) // error
+            assertTrue(stateError2.eatenFoodList.isEmpty())
 
             // reselect -> loading -> success
             diaryViewModel.onSelectDate(dateSuccess)
-            assertTrue(awaitItem().isLoading) // loading
-            assertTrue(awaitItem().error == null) // success
+
+            val loadingState3 = awaitItem()
+            assertTrue(loadingState3.isLoading) // loading
+            assertTrue(loadingState3.error == null) // loading
+            assertTrue(loadingState3.eatenFoodList.isEmpty()) // loading
+
+            val successState3 = awaitItem()
+            assertFalse(successState3.isLoading) // success
+            assertTrue(successState3.eatenFoodList.isNotEmpty()) // success
+            assertTrue(successState3.error == null) // success
         }
     }
 
@@ -271,7 +318,7 @@ class DiaryViewModelTest {
         initializeViewModel()
 
         every { getCaloriesConsumptionForDateRangeUseCase.invoke(any(), any()) } returns flowOf(
-            listOf(
+            mapOf(
                 Pair(expectedDate1, CalorieConsumptionStatus.Over),
                 Pair(expectedDate2, CalorieConsumptionStatus.NotOver),
                 Pair(expectedDate3, CalorieConsumptionStatus.Unknown),
@@ -296,11 +343,11 @@ class DiaryViewModelTest {
     @Test
     fun `should update calories consumption status after adding food`() = runTest {
         val date = DiaryDate.today()
-        val statusFlow = MutableStateFlow<List<Pair<DiaryDate, CalorieConsumptionStatus>>>(listOf(date to CalorieConsumptionStatus.NotOver))
+        val statusFlow = MutableStateFlow<Map<DiaryDate, CalorieConsumptionStatus>>(mapOf(date to CalorieConsumptionStatus.NotOver))
 
         every { getCaloriesConsumptionForDateRangeUseCase.invoke(any(), any()) } returns statusFlow
         coEvery { addFoodToDiaryUseCase.invoke(any(), date, any()) } coAnswers {
-            statusFlow.value = listOf(date to CalorieConsumptionStatus.Over)
+            statusFlow.value = mapOf(date to CalorieConsumptionStatus.Over)
             Unit
         }
         every { diaryDateCalendar.dates } returns listOf(date)
