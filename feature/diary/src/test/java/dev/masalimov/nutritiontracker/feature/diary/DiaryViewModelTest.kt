@@ -1,6 +1,7 @@
 package dev.masalimov.nutritiontracker.feature.diary
 
 import app.cash.turbine.test
+import dev.masalimov.nutritiontracker.core.common.AppDispatchers
 import dev.masalimov.nutritiontracker.domain.GoalCalories
 import dev.masalimov.nutritiontracker.domain.diary.CalorieConsumptionStatus
 import dev.masalimov.nutritiontracker.domain.diary.model.CompleteDiaryInformationForDate
@@ -16,6 +17,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.verify
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
@@ -68,6 +70,14 @@ class DiaryViewModelTest {
         initializeViewModel()
     }
 
+    val testDispatcher = object : AppDispatchers {
+        override val ioDispatcher: CoroutineDispatcher
+            get() = mainDispatcherRule.testDispatcher
+        override val mainDispatcher: CoroutineDispatcher
+            get() = mainDispatcherRule.testDispatcher
+        override val defaultDispatcher: CoroutineDispatcher
+            get() = mainDispatcherRule.testDispatcher
+    }
     private fun initializeViewModel() {
         diaryViewModel = DiaryViewModel(
             getCaloriesConsumptionForDateRangeUseCase,
@@ -75,7 +85,7 @@ class DiaryViewModelTest {
             addFoodToDiaryUseCase,
             goalCalories,
             diaryDateCalendar = diaryDateCalendar,
-            defaultDispatcher = mainDispatcherRule.testDispatcher,
+            appDispatcher = testDispatcher,
         )
     }
 

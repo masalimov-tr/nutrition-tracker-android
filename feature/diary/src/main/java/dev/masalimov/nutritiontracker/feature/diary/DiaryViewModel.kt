@@ -3,6 +3,7 @@ package dev.masalimov.nutritiontracker.feature.diary
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.masalimov.nutritiontracker.core.common.AppDispatchers
 import dev.masalimov.nutritiontracker.domain.GoalCalories
 import dev.masalimov.nutritiontracker.domain.diary.CalorieConsumptionStatus
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
@@ -11,8 +12,6 @@ import dev.masalimov.nutritiontracker.domain.diary.usecase.AddFoodToDiaryUseCase
 import dev.masalimov.nutritiontracker.domain.diary.usecase.GetCaloriesConsumptionForDateRangeUseCase
 import dev.masalimov.nutritiontracker.domain.diary.usecase.GetDiaryStreamForDateUseCase
 import dev.masalimov.nutritiontracker.domain.food.Food
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -36,7 +35,7 @@ class DiaryViewModel @Inject constructor(
     private val addFoodToDiaryUseCase: AddFoodToDiaryUseCase,
     private val goalCalories: GoalCalories,
     private val diaryDateCalendar: DiaryDateCalendar,
-    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val appDispatcher: AppDispatchers,
 ) : ViewModel() {
 
     private val _selectedDate = MutableStateFlow(diaryDateCalendar.startingDate)
@@ -86,7 +85,7 @@ class DiaryViewModel @Inject constructor(
                         )
                     )
                 }
-                .flowOn(defaultDispatcher)
+                .flowOn(appDispatcher.defaultDispatcher)
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DiaryUiState.loading(
             diaryDateCalendar.dates.map { DateUiModel(it) }
