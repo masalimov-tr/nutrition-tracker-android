@@ -37,6 +37,7 @@ import dev.masalimov.nutritiontracker.feature.diary.components.DateHeader
 import dev.masalimov.nutritiontracker.feature.diary.components.DateList
 import dev.masalimov.nutritiontracker.feature.diary.components.EatenFood
 import dev.masalimov.nutritiontracker.feature.diary.components.SuggestedFood
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 
 
@@ -182,7 +183,14 @@ private fun AddFoodLoading() {
 
 private val diaryUiStatePreview = DiaryUiState(
     isLoading = false,
-    dateList = uiDateList,
+    dateList = listOf(
+        DiaryDate(LocalDate(2024, 5, 27)),
+        DiaryDate(LocalDate(2024, 5, 28)),
+        DiaryDate(LocalDate(2024, 5, 29)),
+        DiaryDate(LocalDate(2024, 5, 30)),
+    ).map {
+        DateUiModel(it)
+    },
     eatenFoodList = listOf(
         EatenFoodUiModel(
             name = "Chicken breast",

@@ -4,15 +4,6 @@ import dev.masalimov.nutritiontracker.domain.diary.CalorieConsumptionStatus
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
 
 
-private val today = DiaryDate.today()
-internal val diaryDateCalendar = (-7..7).map {
-    today.plusDays(it)
-}
-internal val uiDateList = diaryDateCalendar.map {
-    DateUiModel(it)
-}
-
-
 data class DiaryUiState(
     val isLoading: Boolean,
     val dateList: List<DateUiModel>,

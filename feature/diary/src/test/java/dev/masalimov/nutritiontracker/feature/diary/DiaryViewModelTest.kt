@@ -5,6 +5,7 @@ import dev.masalimov.nutritiontracker.domain.GoalCalories
 import dev.masalimov.nutritiontracker.domain.diary.CalorieConsumptionStatus
 import dev.masalimov.nutritiontracker.domain.diary.model.CompleteDiaryInformationForDate
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
+import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDateCalendar
 import dev.masalimov.nutritiontracker.domain.diary.usecase.AddFoodToDiaryUseCase
 import dev.masalimov.nutritiontracker.domain.diary.usecase.GetCaloriesConsumptionForDateRangeUseCase
 import dev.masalimov.nutritiontracker.domain.diary.usecase.GetDiaryStreamForDateUseCase
@@ -16,6 +17,7 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
@@ -35,10 +37,10 @@ class DiaryViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    @RelaxedMockK
+    @MockK
     lateinit var getDiaryStreamForDateUseCase: GetDiaryStreamForDateUseCase
 
-    @RelaxedMockK
+    @MockK
     lateinit var getCaloriesConsumptionForDateRangeUseCase: GetCaloriesConsumptionForDateRangeUseCase
 
     @MockK
@@ -47,8 +49,12 @@ class DiaryViewModelTest {
     @RelaxedMockK
     lateinit var goalCalories: GoalCalories
 
+    @MockK
+    lateinit var diaryDateCalendar: DiaryDateCalendar
+
     lateinit var diaryViewModel: DiaryViewModel
 
+    private val startingDate = DiaryDate.today()
     @Before
     fun setUp() {
         MockKAnnotations.init(this)
@@ -56,12 +62,19 @@ class DiaryViewModelTest {
             CompleteDiaryInformationForDate.EMPTY
         )
         every { getCaloriesConsumptionForDateRangeUseCase.invoke(any(), any()) } returns flowOf(emptyList())
+        every { diaryDateCalendar.dates } returns listOf(startingDate)
+        every { diaryDateCalendar.startingDate } returns startingDate
 
+        initializeViewModel()
+    }
+
+    private fun initializeViewModel() {
         diaryViewModel = DiaryViewModel(
             getCaloriesConsumptionForDateRangeUseCase,
             getDiaryStreamForDateUseCase,
             addFoodToDiaryUseCase,
             goalCalories,
+            diaryDateCalendar = diaryDateCalendar,
             defaultDispatcher = mainDispatcherRule.testDispatcher,
         )
     }
@@ -223,10 +236,18 @@ class DiaryViewModelTest {
 
     @Test
     fun `should mark new date as selected`() = runTest {
+        val date1 = DiaryDate.today()
+        val date2 = date1.plusDays(1)
+        val date3 = date2.plusDays(1)
+        every { diaryDateCalendar.dates } returns listOf(date1, date2, date3)
+        initializeViewModel()
+
         diaryViewModel.uiState.test {
             awaitItem() // initial
-            diaryViewModel.onSelectDate(DiaryDate.today().plusDays(1))
-            assertEquals(true, awaitItem().dateList.find { it.date == DiaryDate.today().plusDays(1) }?.isSelected)
+            diaryViewModel.onSelectDate(date2)
+            val state = awaitItem()
+            assertTrue(state.isLoading)
+            assertEquals(true, state.dateList.find { it.date == date2 }?.isSelected)
         }
     }
 
@@ -236,15 +257,8 @@ class DiaryViewModelTest {
         val expectedDate2 = DiaryDate.today().plusDays(1)
         val expectedDate3 = DiaryDate.today().plusDays(2)
 
-        diaryViewModel = DiaryViewModel(
-            getCaloriesConsumptionForDateRangeUseCase,
-            getDiaryStreamForDateUseCase,
-            addFoodToDiaryUseCase,
-            goalCalories,
-            diaryDateToShow = listOf(expectedDate1, expectedDate2, expectedDate3),
-            defaultDispatcher = mainDispatcherRule.testDispatcher,
-        )
-
+        every { diaryDateCalendar.dates } returns listOf(expectedDate1, expectedDate2, expectedDate3)
+        initializeViewModel()
 
         every { getCaloriesConsumptionForDateRangeUseCase.invoke(any(), any()) } returns flowOf(
             listOf(
@@ -266,6 +280,31 @@ class DiaryViewModelTest {
                     it.calorieConsumptionStatus
                 }
             )
+        }
+    }
+
+    @Test
+    fun `should update calories consumption status after adding food`() = runTest {
+        val date = DiaryDate.today()
+        val statusFlow = MutableStateFlow<List<Pair<DiaryDate, CalorieConsumptionStatus>>>(listOf(date to CalorieConsumptionStatus.NotOver))
+
+        every { getCaloriesConsumptionForDateRangeUseCase.invoke(any(), any()) } returns statusFlow
+        coEvery { addFoodToDiaryUseCase.invoke(any(), date, any()) } coAnswers {
+            statusFlow.value = listOf(date to CalorieConsumptionStatus.Over)
+            Unit
+        }
+        every { diaryDateCalendar.dates } returns listOf(date)
+
+        diaryViewModel.uiState.test {
+            awaitItem() // initial
+            awaitItem() // loading
+            val before = awaitItem()
+            assertEquals(CalorieConsumptionStatus.NotOver, before.dateList.single().calorieConsumptionStatus)
+
+            diaryViewModel.addFoodToDiary(foodIdToAdd = 1L, quantityGrams = 100.0)
+
+            val after = awaitItem()
+            assertEquals(CalorieConsumptionStatus.Over, after.dateList.single().calorieConsumptionStatus)
         }
     }
 }
