@@ -14,7 +14,7 @@ data class DiaryUiState(
     val error: String? = null,
 ) {
     companion object {
-        fun loading(dateList: List<DateUiModel>) = DiaryUiState(isLoading = true, dateList = dateList)
+        fun loading(dateList: List<DateUiModel> = emptyList()) = DiaryUiState(isLoading = true, dateList = dateList)
     }
 }
 

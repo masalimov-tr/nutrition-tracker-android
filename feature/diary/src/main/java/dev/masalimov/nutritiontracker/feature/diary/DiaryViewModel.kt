@@ -48,15 +48,22 @@ class DiaryViewModel @Inject constructor(
         .distinctUntilChanged { prev, next -> prev.date == next.date }
         .flatMapLatest { selectedDate: DiaryDate ->
             getDiaryStreamForDateUseCase(selectedDate)
-                .combine(getCaloriesConsumptionForDateRangeUseCase(diaryDateCalendar.dates.first(), diaryDateCalendar.dates.last())) { diaryInfoForDate, caloriesConsumptionsList ->
+                .combine(
+                    getCaloriesConsumptionForDateRangeUseCase(
+                        diaryDateCalendar.dates.first(),
+                        diaryDateCalendar.dates.last()
+                    )
+                ) { diaryInfoForDate, caloriesConsumptionsList ->
                     diaryInfoForDate to caloriesConsumptionsList
                 }
                 .map { (diaryInfoForDate, caloriesConsumptionsList) ->
                     DiaryUiState(
                         dateList = uiState.value.dateList.map { dateUiModel ->
-                            val status = caloriesConsumptionsList.find { it.first == dateUiModel.date }?.second
+                            val status =
+                                caloriesConsumptionsList.find { it.first == dateUiModel.date }?.second
                             dateUiModel.copy(
-                                calorieConsumptionStatus = status ?: CalorieConsumptionStatus.Unknown,
+                                calorieConsumptionStatus = status
+                                    ?: CalorieConsumptionStatus.Unknown,
                             )
                         },
                         caloriesEatenTotal = diaryInfoForDate.diaryEntryForDate?.caloriesEaten ?: 0,
@@ -71,8 +78,8 @@ class DiaryViewModel @Inject constructor(
                 .onStart {
                     val loadingState = DiaryUiState(
                         isLoading = true,
-                        dateList = uiState.value.dateList.map { dateUiModel ->
-                            dateUiModel.copy(isSelected = dateUiModel.date == selectedDate)
+                        dateList = diaryDateCalendar.dates.map {
+                            DateUiModel(it, isSelected = it == selectedDate)
                         },
                     )
                     emit(loadingState)
@@ -87,9 +94,7 @@ class DiaryViewModel @Inject constructor(
                 }
                 .flowOn(appDispatcher.defaultDispatcher)
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DiaryUiState.loading(
-            diaryDateCalendar.dates.map { DateUiModel(it) }
-        ))
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DiaryUiState.loading())
 
     fun onSelectDate(date: DiaryDate) {
         _selectedDate.value = date
