@@ -44,10 +44,13 @@ class DiaryViewModel @Inject constructor(
 
     private val calendarDates: List<DiaryDate> = diaryDateCalendar.dates
 
-    private val caloriesConsumptionStatusFlow = getCaloriesConsumptionForDateRangeUseCase(
+    val caloriesConsumptionStatusFlow = getCaloriesConsumptionForDateRangeUseCase(
         calendarDates.first(),
         calendarDates.last()
     )
+        .onStart {
+            logD("caloriesConsumptionStatusFlow onStart")
+        }
         .onEach {
             logD("caloriesConsumptionStatusFlow on each: $it")
         }
@@ -68,7 +71,11 @@ class DiaryViewModel @Inject constructor(
                     selectedDate,
                     statuses = statuses
                 )
-            )
+            ) as CalendarUiState
+        }
+        .onStart {
+            logD("calendarUiState onStart")
+            emit(CalendarUiState.Loading)
         }
         .onEach {
             logD("calendarUiState on each: $it")
@@ -126,7 +133,7 @@ class DiaryViewModel @Inject constructor(
     private fun buildCalendar(
         dates: List<DiaryDate>,
         selectedDate: DiaryDate?,
-        statuses: Map<DiaryDate, CalorieConsumptionStatus> = caloriesConsumptionStatusFlow.value
+        statuses: Map<DiaryDate, CalorieConsumptionStatus> = emptyMap()
     ): List<DateUiModel> = dates.map { date ->
         DateUiModel(
             date = date,
