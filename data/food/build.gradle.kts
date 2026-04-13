@@ -46,6 +46,7 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     ksp(libs.hiltAndroidCompiler)
     testImplementation(libs.junit)
+    testImplementation(libs.truth)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
