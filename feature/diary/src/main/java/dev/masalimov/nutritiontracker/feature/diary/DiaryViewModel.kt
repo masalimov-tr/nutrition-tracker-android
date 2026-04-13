@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.masalimov.nutritiontracker.core.common.AppDispatchers
+import dev.masalimov.nutritiontracker.core.ui.logD
 import dev.masalimov.nutritiontracker.domain.GoalCalories
 import dev.masalimov.nutritiontracker.domain.diary.CalorieConsumptionStatus
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
@@ -19,9 +20,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -44,6 +48,9 @@ class DiaryViewModel @Inject constructor(
         calendarDates.first(),
         calendarDates.last()
     )
+        .onEach {
+            logD("caloriesConsumptionStatusFlow on each: $it")
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -54,6 +61,7 @@ class DiaryViewModel @Inject constructor(
 
     val calendarUiState: StateFlow<CalendarUiState> = _selectedDate
         .combine(caloriesConsumptionStatusFlow) { selectedDate, statuses ->
+            logD("calendarUiState combine: selectedDate = $selectedDate, statuses = $statuses")
             CalendarUiState.Calendar(
                 buildCalendar(
                     calendarDates,
@@ -61,6 +69,9 @@ class DiaryViewModel @Inject constructor(
                     statuses = statuses
                 )
             )
+        }
+        .onEach {
+            logD("calendarUiState on each: $it")
         }
         .stateIn(
             viewModelScope,
@@ -70,26 +81,41 @@ class DiaryViewModel @Inject constructor(
 
     val diaryInfoUiState: StateFlow<DiaryInfoUiState> = _selectedDate
         .flatMapLatest { date ->
-            getDiaryStreamForDateUseCase(date)
-                .map { diaryInfoForDate ->
-                    DiaryInfoUiState.DiaryInfo(
-                        eatenFoodList = diaryInfoForDate.diaryEntryForDate?.eatenFood?.map { it.toEatenFoodUiModel() }
-                            ?: emptyList(),
-                        suggestedFoodList = diaryInfoForDate.suggestedFood.map(Food::toSuggestedFoodUiModel),
-                        caloriesEatenTotal = diaryInfoForDate.diaryEntryForDate?.caloriesEaten ?: 0,
-                        goalCaloriesPerDay = diaryInfoForDate.diaryEntryForDate?.goalCaloriesPerDay
-                            ?: goalCalories.caloriesPerDay,
-                    )
+            logD("diaryInfoUiState flatMapLatest: $date")
+            flow {
+                emit(DiaryInfoUiState.Loading)
+                emitAll(
+                    getDiaryStreamForDateUseCase(date)
+                        .map { diaryInfoForDate ->
+                            DiaryInfoUiState.DiaryInfo(
+                                eatenFoodList = diaryInfoForDate.diaryEntryForDate?.eatenFood?.map { it.toEatenFoodUiModel() }
+                                    ?: emptyList(),
+                                suggestedFoodList = diaryInfoForDate.suggestedFood.map(Food::toSuggestedFoodUiModel),
+                                caloriesEatenTotal = diaryInfoForDate.diaryEntryForDate?.caloriesEaten
+                                    ?: 0,
+                                goalCaloriesPerDay = diaryInfoForDate.diaryEntryForDate?.goalCaloriesPerDay
+                                    ?: goalCalories.caloriesPerDay,
+                            )
+                        }
+                        .catch { e ->
+                            emit(
+                                DiaryInfoUiState.Error(
+                                    e.message ?: "Failed to load diary information"
+                                )
+                            )
+                        }
+                        .flowOn(appDispatcher.defaultDispatcher)
+                )
+            }
+                .onEach {
+                    logD("diaryInfoUiState flatMapLatest flow on each: $it")
                 }
-                .onStart {
-                    DiaryInfoUiState.Loading
-                }
-                .catch {
-                    DiaryInfoUiState.Error(
-                        it.message ?: "Failed to load diary information" //TODO string res
-                    )
-                }
-                .flowOn(appDispatcher.defaultDispatcher)
+        }
+        .onStart {
+            logD("diaryInfoUiState onStart")
+        }
+        .onEach {
+            logD("diaryInfoUiState on each: $it")
         }
         .stateIn(
             viewModelScope,

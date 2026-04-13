@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme
+import dev.masalimov.nutritiontracker.core.ui.logD
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
 import dev.masalimov.nutritiontracker.feature.diary.components.Calendar
 import dev.masalimov.nutritiontracker.feature.diary.components.CaloriesCard
@@ -54,6 +55,19 @@ fun DiaryScreen(
 
     val calendarUiState by viewModel.calendarUiState.collectAsStateWithLifecycle()
     val diaryInfoUiState by viewModel.diaryInfoUiState.collectAsStateWithLifecycle()
+
+    logD("UI: calendarUiState: $calendarUiState")
+    logD("UI: diaryInfoUiState: $diaryInfoUiState")
+//    when (calendarUiState) {
+//        is CalendarUiState.Calendar -> logD("Calendar loaded: ${(calendarUiState as CalendarUiState.Calendar).uiModels.size}")
+//        CalendarUiState.Loading -> logD("Calendar loading")
+//    }
+//    when (diaryInfoUiState) {
+//        is DiaryInfoUiState.DiaryInfo -> logD("Diary info loaded: ${(diaryInfoUiState as DiaryInfoUiState.DiaryInfo).eatenFoodList.size}")
+//        DiaryInfoUiState.Loading -> logD("Diary info loading")
+//        is DiaryInfoUiState.Error -> logD("Diary info error")
+//    }
+    logD("-----")
 
     if (diaryInfoUiState is DiaryInfoUiState.Error) {
         LaunchedEffect(Unit) {
