@@ -5,6 +5,7 @@ import dev.masalimov.nutritiontracker.domain.diary.model.CompleteDiaryInformatio
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryEntryForDate
 import dev.masalimov.nutritiontracker.domain.food.FoodRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.transform
 import javax.inject.Inject
@@ -34,6 +35,7 @@ class GetDiaryStreamForDateUseCase @Inject constructor(
     operator fun invoke(date: DiaryDate): Flow<CompleteDiaryInformationForDate> {
         return diaryRepository.getDiaryByDateFlow(date)
             .transform { diary: DiaryEntryForDate? ->
+                delay(1000)
                 if (diary == null) {
                     emit(CompleteDiaryInformationForDate.EMPTY)
                     return@transform

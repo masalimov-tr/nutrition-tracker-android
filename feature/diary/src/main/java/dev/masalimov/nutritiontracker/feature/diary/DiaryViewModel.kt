@@ -17,86 +17,86 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class DiaryViewModel @Inject constructor(
     private val getCaloriesConsumptionForDateRangeUseCase: GetCaloriesConsumptionForDateRangeUseCase,
     private val getDiaryStreamForDateUseCase: GetDiaryStreamForDateUseCase,
     private val addFoodToDiaryUseCase: AddFoodToDiaryUseCase,
     private val goalCalories: GoalCalories,
-    private val diaryDateCalendar: DiaryDateCalendar,
-    private val appDispatcher: AppDispatchers,
+    diaryDateCalendar: DiaryDateCalendar,
+    appDispatcher: AppDispatchers,
 ) : ViewModel() {
 
-    private val _selectedDate = MutableStateFlow(diaryDateCalendar.startingDate)
-    private val _addFoodUiState: MutableStateFlow<AddFoodUiState> =
-        MutableStateFlow(AddFoodUiState.Idle)
-    val addFoodUiState: StateFlow<AddFoodUiState> = _addFoodUiState.asStateFlow()
+    private val calendarDates: List<DiaryDate> = diaryDateCalendar.dates
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val uiState: StateFlow<DiaryUiState> = _selectedDate
-        .distinctUntilChanged { prev, next -> prev.date == next.date }
-        .flatMapLatest { selectedDate: DiaryDate ->
-            getDiaryStreamForDateUseCase(selectedDate)
-                .combine(
-                    getCaloriesConsumptionForDateRangeUseCase(
-                        diaryDateCalendar.dates.first(),
-                        diaryDateCalendar.dates.last()
-                    )
-                ) { diaryInfoForDate, caloriesConsumptionsMap ->
-                    diaryInfoForDate to caloriesConsumptionsMap
-                }
-                .map { (diaryInfoForDate, caloriesConsumptionsMap) ->
-                    DiaryUiState(
-                        dateList = uiState.value.dateList.map { it ->
-                            val statusForDate = caloriesConsumptionsMap.getOrElse(it.date) {
-                                CalorieConsumptionStatus.Unknown
-                            }
-                            it.copy(calorieConsumptionStatus = statusForDate)
-                        },
-                        caloriesEatenTotal = diaryInfoForDate.diaryEntryForDate?.caloriesEaten ?: 0,
-                        eatenFoodList = diaryInfoForDate.diaryEntryForDate?.eatenFood?.map { it.toEatenFoodUiModel() }
-                            ?: emptyList(),
-                        suggestedFoodList = diaryInfoForDate.suggestedFood.map(Food::toSuggestedFoodUiModel),
-                        goalCaloriesPerDay = diaryInfoForDate.diaryEntryForDate?.goalCaloriesPerDay
-                            ?: goalCalories.caloriesPerDay,
-                        isLoading = false,
-                    )
-                }
-                .onStart {
-                    val loadingState = DiaryUiState(
-                        isLoading = true,
-                        dateList = diaryDateCalendar.dates.map {
-                            DateUiModel(it, isSelected = it == selectedDate)
-                        },
-                    )
-                    emit(loadingState)
-                }
-                .catch { e ->
-                    emit(
-                        uiState.value.copy(
-                            isLoading = false,
-                            error = e.message ?: "Failed to load diary data",
-                        )
-                    )
-                }
-                .flowOn(appDispatcher.defaultDispatcher)
-        }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DiaryUiState.loading())
+    private val caloriesConsumptionStatusFlow = getCaloriesConsumptionForDateRangeUseCase(
+        diaryDateCalendar.startingDate.plusDays(-1),
+        diaryDateCalendar.startingDate.plusDays(1),
+    )
+    .stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyMap()
+    )
+
+    private val _selectedDate = MutableStateFlow(diaryDateCalendar.startingDate)
+
+    val uiState: StateFlow<DiaryUiState> = _selectedDate.flatMapLatest { selectedDate ->
+        getDiaryStreamForDateUseCase(selectedDate)
+            .combine(caloriesConsumptionStatusFlow) { diaryInfoForDate, caloriesConsumptionStatusMap ->
+                DiaryUiState(
+                    isLoading = false,
+                    caloriesEatenTotal = diaryInfoForDate.diaryEntryForDate?.caloriesEaten ?: 0,
+                    eatenFoodList = diaryInfoForDate.diaryEntryForDate?.eatenFood?.map { it.toEatenFoodUiModel() }
+                        ?: emptyList(),
+                    suggestedFoodList = diaryInfoForDate.suggestedFood.map(Food::toSuggestedFoodUiModel),
+                    goalCaloriesPerDay = diaryInfoForDate.diaryEntryForDate?.goalCaloriesPerDay
+                        ?: goalCalories.caloriesPerDay,
+                    calendar = buildCalendar(calendarDates, selectedDate, caloriesConsumptionStatusMap)
+                )
+            }
+            .onEach {
+                it
+            }
+            .onStart {
+                emit(DiaryUiState.loading(calendar = buildCalendar(calendarDates, selectedDate)))
+            }
+    }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            DiaryUiState.loading(calendar = buildCalendar(calendarDates, _selectedDate.value))
+        )
+
+    private fun buildCalendar(
+        dates: List<DiaryDate>,
+        selectedDate: DiaryDate?,
+        statuses: Map<DiaryDate, CalorieConsumptionStatus> = caloriesConsumptionStatusFlow.value
+    ): List<DateUiModel> = dates.map { date ->
+        DateUiModel(
+            date = date,
+            isSelected = selectedDate?.let { it == date } ?: false,
+            calorieConsumptionStatus = statuses[date] ?: CalorieConsumptionStatus.Unknown
+        )
+    }
 
     fun onSelectDate(date: DiaryDate) {
         _selectedDate.value = date
     }
+
+    private val _addFoodUiState: MutableStateFlow<AddFoodUiState> =
+        MutableStateFlow(AddFoodUiState.Idle)
+    val addFoodUiState: StateFlow<AddFoodUiState> = _addFoodUiState.asStateFlow()
+
 
     fun addFoodToDiary(foodIdToAdd: Long, quantityGrams: Double = 100.0) {
         viewModelScope.launch {

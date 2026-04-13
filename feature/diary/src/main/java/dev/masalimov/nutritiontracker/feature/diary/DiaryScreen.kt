@@ -108,7 +108,7 @@ private fun DiaryContent(
                     ) {
                         DateHeader(
                             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
-                            uiState.dateList.find { it.isSelected },
+                            uiState.calendar.find { it.isSelected },
                             )
                         IconButton(
                             modifier = Modifier.padding(top = 16.dp),
@@ -129,7 +129,7 @@ private fun DiaryContent(
                     DateList(
                         modifier = Modifier.fillMaxWidth(),
                         uiState.isLoading,
-                        uiState.dateList,
+                        uiState.calendar,
                         onDayClick = onDayClick
                     )
                 }
@@ -183,7 +183,7 @@ private fun AddFoodLoading() {
 
 private val diaryUiStatePreview = DiaryUiState(
     isLoading = false,
-    dateList = listOf(
+    calendar = listOf(
         DiaryDate(LocalDate(2024, 5, 27)),
         DiaryDate(LocalDate(2024, 5, 28)),
         DiaryDate(LocalDate(2024, 5, 29)),

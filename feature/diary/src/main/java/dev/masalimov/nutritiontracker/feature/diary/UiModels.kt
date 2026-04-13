@@ -3,10 +3,9 @@ package dev.masalimov.nutritiontracker.feature.diary
 import dev.masalimov.nutritiontracker.domain.diary.CalorieConsumptionStatus
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
 
-
 data class DiaryUiState(
     val isLoading: Boolean,
-    val dateList: List<DateUiModel>,
+    val calendar: List<DateUiModel>,
     val eatenFoodList: List<EatenFoodUiModel> = emptyList(),
     val suggestedFoodList: List<SuggestedFoodUiModel> = emptyList(),
     val caloriesEatenTotal: Int? = null,
@@ -14,7 +13,12 @@ data class DiaryUiState(
     val error: String? = null,
 ) {
     companion object {
-        fun loading(dateList: List<DateUiModel> = emptyList()) = DiaryUiState(isLoading = true, dateList = dateList)
+        fun loading(
+            calendar: List<DateUiModel>,
+        ) = DiaryUiState(
+            isLoading = true,
+            calendar = calendar,
+        )
     }
 }
 
