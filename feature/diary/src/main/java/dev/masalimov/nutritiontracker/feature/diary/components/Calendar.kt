@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -32,24 +31,42 @@ import androidx.compose.ui.unit.dp
 import dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme
 import dev.masalimov.nutritiontracker.domain.diary.CalorieConsumptionStatus
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
+import dev.masalimov.nutritiontracker.feature.diary.CalendarUiState
 import dev.masalimov.nutritiontracker.feature.diary.DateUiModel
 import kotlinx.datetime.toJavaLocalDate
 import java.time.format.DateTimeFormatter
 
 
 @Composable
-fun DateList(
+fun Calendar(
     modifier: Modifier = Modifier,
-    isScreenLoading: Boolean = false,
-    dateList: List<DateUiModel> = emptyList(),
+    calendarUiState: CalendarUiState,
     onDayClick: (DiaryDate) -> Unit = {},
 ) {
+    if (calendarUiState is CalendarUiState.Loading) {
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            repeat(14) {
+                item {
+                    DayButton(
+                        date = DiaryDate.EMPTY,
+                        selected = false,
+                        calorieConsumptionStatus = CalorieConsumptionStatus.Unknown,
+                    )
+                }
+            }
+        }
+        return
+    }
+    calendarUiState as CalendarUiState.Calendar
+
     Box(modifier = modifier) {
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(
-                items = dateList,
+                items = calendarUiState.uiModels,
                 key = { it.date.date.toEpochDays() }
             ) {
                 DayButton(
@@ -57,7 +74,6 @@ fun DateList(
                     selected = it.isSelected,
                     calorieConsumptionStatus = it.calorieConsumptionStatus,
                     onClick = onDayClick,
-                    isScreenLoading = isScreenLoading,
                 )
             }
         }
@@ -109,7 +125,6 @@ private fun DayButton(
     selected: Boolean,
     calorieConsumptionStatus: CalorieConsumptionStatus = CalorieConsumptionStatus.Unknown,
     onClick: (DiaryDate) -> Unit = {},
-    isScreenLoading: Boolean = false,
 ) {
     val androidLocale = LocalConfiguration.current.locales[0]
     val dayFormatter = remember(androidLocale) {
@@ -137,19 +152,24 @@ private fun DayButton(
                 color = surfaceColor,
                 shape = shape
             )
-            .clickable(enabled = isScreenLoading.not(), onClick = { onClick(date) })
+            .clickable(onClick = { onClick(date) })
             .padding(horizontal = 8.dp, vertical = 16.dp),
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            val (date,month) = if (date == DiaryDate.EMPTY)
+                "." to "xxx"
+            else
+                date.date.toJavaLocalDate().dayOfMonth.toString() to date.date.toJavaLocalDate().format(monthFormatter)
+
             Text(
-                text = date.date.toJavaLocalDate().format(dayFormatter),
+                text = date,
                 style = MaterialTheme.typography.labelMedium,
                 color = textColor,
             )
             Text(
-                text = date.date.toJavaLocalDate().format(monthFormatter),
+                text = month,
                 style = MaterialTheme.typography.labelSmall,
                 color = textColor,
             )
@@ -158,7 +178,7 @@ private fun DayButton(
                 modifier = Modifier
                     .background(
                         shape = CircleShape,
-                        color = when(calorieConsumptionStatus) {
+                        color = when (calorieConsumptionStatus) {
                             CalorieConsumptionStatus.Over -> MaterialTheme.colorScheme.error
                             CalorieConsumptionStatus.NotOver -> MaterialTheme.colorScheme.primary
                             CalorieConsumptionStatus.Unknown -> MaterialTheme.colorScheme.outline
@@ -172,29 +192,40 @@ private fun DayButton(
 
 @Preview(showBackground = true)
 @Composable
-private fun DayButtonPreview() {
+private fun LoadingCalendar() {
     NutritionTrackerTheme {
-        LazyColumn {
-            item {
-                DateList(
-                    modifier = Modifier.fillMaxWidth(),
-                    dateList = listOf(
-                        DateUiModel(DiaryDate.today().plusDays(-1), false),
-                        DateUiModel(DiaryDate.today(), true),
-                        DateUiModel(DiaryDate.today().plusDays(1), false),
-                        DateUiModel(DiaryDate.today().plusDays(2), false),
-                        DateUiModel(DiaryDate.today().plusDays(3), false),
-                        DateUiModel(DiaryDate.today().plusDays(4), false),
-                        DateUiModel(DiaryDate.today().plusDays(5), false),
-                        DateUiModel(DiaryDate.today().plusDays(6), false),
-                        DateUiModel(DiaryDate.today().plusDays(7), false),
-                        DateUiModel(DiaryDate.today().plusDays(8), false),
-                        DateUiModel(DiaryDate.today().plusDays(9), false),
-                        DateUiModel(DiaryDate.today().plusDays(10), false),
-                    ),
-                )
-            }
-        }
+        Calendar(
+            modifier = Modifier.fillMaxWidth(),
+            CalendarUiState.Loading,
+        )
+    }
+}
+
+internal val calendarPreview = CalendarUiState.Calendar(
+    uiModels = listOf(
+        DateUiModel(DiaryDate.today().plusDays(-1), false),
+        DateUiModel(DiaryDate.today(), true),
+        DateUiModel(DiaryDate.today().plusDays(1), false),
+        DateUiModel(DiaryDate.today().plusDays(2), false),
+        DateUiModel(DiaryDate.today().plusDays(3), false),
+        DateUiModel(DiaryDate.today().plusDays(4), false),
+        DateUiModel(DiaryDate.today().plusDays(5), false),
+        DateUiModel(DiaryDate.today().plusDays(6), false),
+        DateUiModel(DiaryDate.today().plusDays(7), false),
+        DateUiModel(DiaryDate.today().plusDays(8), false),
+        DateUiModel(DiaryDate.today().plusDays(9), false),
+        DateUiModel(DiaryDate.today().plusDays(10), false),
+    ),
+)
+
+@Preview(showBackground = true)
+@Composable
+private fun LoadedCalendar() {
+    NutritionTrackerTheme {
+        Calendar(
+            modifier = Modifier.fillMaxWidth(),
+            calendarPreview,
+        )
     }
 }
 

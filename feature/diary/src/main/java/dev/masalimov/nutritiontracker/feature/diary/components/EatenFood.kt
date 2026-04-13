@@ -16,52 +16,55 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme
 import dev.masalimov.nutritiontracker.core.ui.components.AppCard
 import dev.masalimov.nutritiontracker.core.ui.components.ShimmerBar
+import dev.masalimov.nutritiontracker.feature.diary.DiaryInfoUiState
 import dev.masalimov.nutritiontracker.feature.diary.EatenFoodUiModel
 
 @Composable
 internal fun EatenFood(
-    eatenFood: List<EatenFoodUiModel>,
-    isLoading: Boolean,
+    diaryInfoUiState: DiaryInfoUiState,
 ) {
-    Column {
-        Text(
-            text = "Today's meals",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-        if (isLoading) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                repeat(2) {
-                    DiaryListItemPlaceholder()
-                }
-            }
-            return
-        }
-        if (eatenFood.isEmpty()) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
             Text(
-                text = "No meals added yet",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(vertical = 8.dp)
+                text = "Today's meals",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.padding(bottom = 16.dp)
             )
+
+        if (diaryInfoUiState is DiaryInfoUiState.Loading) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    repeat(4) {
+                        DiaryListItemPlaceholder()
+                    }
+            }
             return
         }
 
-        Column(
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            eatenFood.forEach { food ->
-                DiaryListItem(food)
+
+        diaryInfoUiState as DiaryInfoUiState.DiaryInfo
+        if (diaryInfoUiState.eatenFoodList.isEmpty()) {
+                Text(
+                    text = "No meals added yet",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
             }
+
+        for (item in diaryInfoUiState.eatenFoodList) {
+            DiaryListItem(item)
         }
     }
+
 }
 
 
@@ -174,49 +177,51 @@ private fun DiaryItemCard(
     }
 }
 
-@androidx.compose.ui.tooling.preview.Preview(name = "EatenFood - Sample", showBackground = true)
+@Preview(showBackground = true)
 @Composable
-private fun PreviewEatenFood() {
+private fun LoadedPreview() {
     NutritionTrackerTheme {
         EatenFood(
-            eatenFood = listOf(
-                EatenFoodUiModel(
-                    name = "Apple",
-                    quantityGram = 150.0,
-                    caloriesEaten = 78,
-                    caloriesPer100g = 52,
+            DiaryInfoUiState.DiaryInfo(
+                listOf(
+                    EatenFoodUiModel(
+                        name = "Apple",
+                        quantityGram = 150.0,
+                        caloriesEaten = 78,
+                        caloriesPer100g = 52,
+                    ),
+                    EatenFoodUiModel(
+                        name = "Grilled Chicken Breast",
+                        quantityGram = 200.0,
+                        caloriesEaten = 330,
+                        caloriesPer100g = 165,
+                    ),
+                    EatenFoodUiModel(
+                        name = "Greek Yogurt",
+                        quantityGram = 100.0,
+                        caloriesEaten = 59,
+                        caloriesPer100g = 59,
+                    ),
+                    EatenFoodUiModel(
+                        name = "Lorem ipsum dolor sit amet lorem ipsum dolor sit amet",
+                        quantityGram = 100.0,
+                        caloriesEaten = 59,
+                        caloriesPer100g = 59,
+                    ),
                 ),
-                EatenFoodUiModel(
-                    name = "Grilled Chicken Breast",
-                    quantityGram = 200.0,
-                    caloriesEaten = 330,
-                    caloriesPer100g = 165,
-                ),
-                EatenFoodUiModel(
-                    name = "Greek Yogurt",
-                    quantityGram = 100.0,
-                    caloriesEaten = 59,
-                    caloriesPer100g = 59,
-                ),
-                EatenFoodUiModel(
-                    name = "Lorem ipsum dolor sit amet lorem ipsum dolor sit amet",
-                    quantityGram = 100.0,
-                    caloriesEaten = 59,
-                    caloriesPer100g = 59,
-                ),
-            ),
-            isLoading = false,
+                emptyList(),
+                0, 0,
+            )
         )
     }
 }
 
-@androidx.compose.ui.tooling.preview.Preview(name = "EatenFood - Loading", showBackground = true)
+@Preview(showBackground = true)
 @Composable
-private fun PreviewEatenFoodLoading() {
+private fun LoadingPreview() {
     NutritionTrackerTheme {
         EatenFood(
-            eatenFood = emptyList(),
-            isLoading = true,
+            DiaryInfoUiState.Loading
         )
     }
 }

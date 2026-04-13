@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme
 
 private const val SHIMMER_ALPHA_HIGH = 0.6f
 private const val SHIMMER_ALPHA_LOW = 0.3f
@@ -89,7 +90,7 @@ private fun rememberShimmerBrush(
 @Preview(showBackground = true)
 @Composable
 private fun ShimmerBarPreview() {
-    _root_ide_package_.dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme {
+    NutritionTrackerTheme {
         ShimmerBar(
             modifier = Modifier
                 .fillMaxWidth()
@@ -102,7 +103,7 @@ private fun ShimmerBarPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun ShimmerCirclePreview() {
-    _root_ide_package_.dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme {
+    NutritionTrackerTheme {
         ShimmerCircle(
             modifier = Modifier.size(48.dp),
         )

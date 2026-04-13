@@ -10,7 +10,7 @@ import kotlinx.datetime.todayIn
 data class DiaryDate(
     val date: LocalDate,
 ) {
-    
+
     fun plusDays(days: Int): DiaryDate =
         DiaryDate(date.plus(days, DateTimeUnit.DAY))
 
@@ -35,5 +35,7 @@ data class DiaryDate(
 
         fun of(epochDay: Int): DiaryDate =
             DiaryDate(LocalDate.fromEpochDays(epochDay))
+
+        val EMPTY : DiaryDate = of(0)
     }
 }

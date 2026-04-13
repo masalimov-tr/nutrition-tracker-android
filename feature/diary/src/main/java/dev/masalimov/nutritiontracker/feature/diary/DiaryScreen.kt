@@ -32,12 +32,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
+import dev.masalimov.nutritiontracker.feature.diary.components.Calendar
 import dev.masalimov.nutritiontracker.feature.diary.components.CaloriesCard
 import dev.masalimov.nutritiontracker.feature.diary.components.DateHeader
-import dev.masalimov.nutritiontracker.feature.diary.components.DateList
 import dev.masalimov.nutritiontracker.feature.diary.components.EatenFood
 import dev.masalimov.nutritiontracker.feature.diary.components.SuggestedFood
-import kotlinx.datetime.LocalDate
+import dev.masalimov.nutritiontracker.feature.diary.components.calendarPreview
 import kotlinx.serialization.Serializable
 
 
@@ -52,7 +52,19 @@ fun DiaryScreen(
 ) {
     val context = LocalContext.current
 
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val calendarUiState by viewModel.calendarUiState.collectAsStateWithLifecycle()
+    val diaryInfoUiState by viewModel.diaryInfoUiState.collectAsStateWithLifecycle()
+
+    if (diaryInfoUiState is DiaryInfoUiState.Error) {
+        LaunchedEffect(Unit) {
+            Toast.makeText(
+                context, "Failed to load diary info", Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+
+
     val addFoodUiState by viewModel.addFoodUiState.collectAsStateWithLifecycle()
     if (addFoodUiState is AddFoodUiState.Error) {
         LaunchedEffect(Unit) {
@@ -63,7 +75,8 @@ fun DiaryScreen(
         }
     }
     DiaryContent(
-        uiState,
+        calendarUiState,
+        diaryInfoUiState,
         addFoodUiState,
         onDayClick = viewModel::onSelectDate,
         onLogFoodClick = onLogFoodClick,
@@ -73,7 +86,8 @@ fun DiaryScreen(
 
 @Composable
 private fun DiaryContent(
-    uiState: DiaryUiState,
+    calendarUiState: CalendarUiState,
+    diaryInfoUiState: DiaryInfoUiState,
     addFoodUiState: AddFoodUiState,
     onDayClick: (DiaryDate) -> Unit = {},
     onLogFoodClick: () -> Unit = {},
@@ -108,8 +122,8 @@ private fun DiaryContent(
                     ) {
                         DateHeader(
                             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
-                            uiState.calendar.find { it.isSelected },
-                            )
+                            calendarUiState,
+                        )
                         IconButton(
                             modifier = Modifier.padding(top = 16.dp),
                             colors = androidx.compose.material3.IconButtonDefaults.iconButtonColors(
@@ -126,27 +140,25 @@ private fun DiaryContent(
                 }
 
                 item(key = "date_list") {
-                    DateList(
+                    Calendar(
                         modifier = Modifier.fillMaxWidth(),
-                        uiState.isLoading,
-                        uiState.calendar,
+                        calendarUiState = calendarUiState,
                         onDayClick = onDayClick
                     )
                 }
 
                 item(key = "calories_card") {
                     CaloriesCard(
-                        caloriesPerDay = uiState.goalCaloriesPerDay,
-                        consumedCalories = uiState.caloriesEatenTotal
+                        diaryInfoUiState,
                     )
                 }
 
                 item(key = "eaten_food_section") {
-                    EatenFood(uiState.eatenFoodList, uiState.isLoading)
+                    EatenFood(diaryInfoUiState)
                 }
 
                 item(key = "suggested_food_section") {
-                    SuggestedFood(uiState.suggestedFoodList)
+                    SuggestedFood(diaryInfoUiState)
                 }
             }
         }
@@ -181,16 +193,7 @@ private fun AddFoodLoading() {
     }
 }
 
-private val diaryUiStatePreview = DiaryUiState(
-    isLoading = false,
-    calendar = listOf(
-        DiaryDate(LocalDate(2024, 5, 27)),
-        DiaryDate(LocalDate(2024, 5, 28)),
-        DiaryDate(LocalDate(2024, 5, 29)),
-        DiaryDate(LocalDate(2024, 5, 30)),
-    ).map {
-        DateUiModel(it)
-    },
+private val diaryInfoUiStatePreview = DiaryInfoUiState.DiaryInfo(
     eatenFoodList = listOf(
         EatenFoodUiModel(
             name = "Chicken breast",
@@ -220,13 +223,15 @@ private val diaryUiStatePreview = DiaryUiState(
     goalCaloriesPerDay = 2000,
 )
 
-@Preview(showBackground = true, name = "Diary Screen")
+
+@Preview(showBackground = true)
 @Composable
-private fun DiaryScreenPreview() {
+private fun LoadingCalendar_LoadingInfo() {
     NutritionTrackerTheme {
         DiaryContent(
             addFoodUiState = AddFoodUiState.Idle,
-            uiState = diaryUiStatePreview
+            calendarUiState = CalendarUiState.Loading,
+            diaryInfoUiState = DiaryInfoUiState.Loading,
         )
     }
 }
@@ -234,23 +239,50 @@ private fun DiaryScreenPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun DiaryScreenLoadingPreview() {
+private fun ReadyCalendar_LoadingInfo() {
+    NutritionTrackerTheme {
+        DiaryContent(
+            addFoodUiState = AddFoodUiState.Idle,
+            calendarUiState = calendarPreview,
+            diaryInfoUiState = DiaryInfoUiState.Loading,
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ReadyCalendar_ReadyInfo() {
+    NutritionTrackerTheme {
+        DiaryContent(
+            addFoodUiState = AddFoodUiState.Idle,
+            calendarUiState = calendarPreview,
+            diaryInfoUiState = diaryInfoUiStatePreview,
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LoadingCalendar_ReadyInfo() {
+    NutritionTrackerTheme {
+        DiaryContent(
+            addFoodUiState = AddFoodUiState.Idle,
+            calendarUiState = CalendarUiState.Loading,
+            diaryInfoUiState = diaryInfoUiStatePreview,
+        )
+    }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+private fun ReadyCalendar_ReadyInfo_AddFood() {
     NutritionTrackerTheme {
         DiaryContent(
             addFoodUiState = AddFoodUiState.Loading,
-            uiState = diaryUiStatePreview
+            calendarUiState = calendarPreview,
+            diaryInfoUiState = diaryInfoUiStatePreview,
         )
     }
 }
 
-
-@Preview(showBackground = true)
-@Composable
-private fun DiaryScreenErrorPreview() {
-    NutritionTrackerTheme {
-        DiaryContent(
-            addFoodUiState = AddFoodUiState.Error,
-            uiState = diaryUiStatePreview
-        )
-    }
-}

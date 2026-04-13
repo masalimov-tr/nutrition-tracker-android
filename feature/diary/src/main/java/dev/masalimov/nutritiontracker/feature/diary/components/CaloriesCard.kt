@@ -26,11 +26,11 @@ import androidx.compose.ui.unit.dp
 import dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme
 import dev.masalimov.nutritiontracker.core.ui.components.ShimmerBar
 import dev.masalimov.nutritiontracker.core.ui.components.ShimmerCircle
+import dev.masalimov.nutritiontracker.feature.diary.DiaryInfoUiState
 
 @Composable
 internal fun CaloriesCard(
-    caloriesPerDay: Int? = null,
-    consumedCalories: Int? = null,
+    diaryInfoUiState: DiaryInfoUiState,
 ) {
     Box(
         modifier = Modifier
@@ -50,35 +50,43 @@ internal fun CaloriesCard(
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-            if (caloriesPerDay != null && consumedCalories != null) {
-                CaloriesCardContent(caloriesPerDay, consumedCalories)
-            } else {
-                val shimmerColor = MaterialTheme.colorScheme.onSurfaceVariant
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    ShimmerCircle(
-                        modifier = Modifier.size(72.dp),
-                        shimmerColor = shimmerColor
+            when (diaryInfoUiState) {
+                is DiaryInfoUiState.DiaryInfo -> {
+                    CaloriesCardContent(
+                        diaryInfoUiState.goalCaloriesPerDay,
+                        diaryInfoUiState.caloriesEatenTotal,
                     )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        ShimmerBar(
-                            modifier = Modifier
-                                .height(20.dp)
-                                .fillMaxWidth(0.4f)
-                                .clip(RoundedCornerShape(6.dp)),
+                }
+
+                is DiaryInfoUiState.Loading, is DiaryInfoUiState.Error -> {
+
+                    val shimmerColor = MaterialTheme.colorScheme.onSurfaceVariant
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        ShimmerCircle(
+                            modifier = Modifier.size(72.dp),
                             shimmerColor = shimmerColor
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        ShimmerBar(
-                            modifier = Modifier
-                                .height(20.dp)
-                                .fillMaxWidth(0.6f)
-                                .clip(RoundedCornerShape(6.dp)),
-                            shimmerColor = shimmerColor
-                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column {
+                            ShimmerBar(
+                                modifier = Modifier
+                                    .height(20.dp)
+                                    .fillMaxWidth(0.4f)
+                                    .clip(RoundedCornerShape(6.dp)),
+                                shimmerColor = shimmerColor
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            ShimmerBar(
+                                modifier = Modifier
+                                    .height(20.dp)
+                                    .fillMaxWidth(0.6f)
+                                    .clip(RoundedCornerShape(6.dp)),
+                                shimmerColor = shimmerColor
+                            )
+                        }
                     }
                 }
             }
@@ -89,11 +97,11 @@ internal fun CaloriesCard(
 
 @Composable
 private fun CaloriesCardContent(
-    caloriesPerDay: Int,
+    goalCalories: Int,
     consumedCalories: Int,
 ) {
-    val progress = if (caloriesPerDay > 0) {
-        consumedCalories.toFloat() / caloriesPerDay.toFloat()
+    val progress = if (goalCalories > 0) {
+        consumedCalories.toFloat() / goalCalories.toFloat()
     } else 0f
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -115,13 +123,13 @@ private fun CaloriesCardContent(
                 )
                 Text(
                     modifier = Modifier.alignByBaseline(),
-                    text = " / $caloriesPerDay kcal",
+                    text = " / $goalCalories kcal",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Normal,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
-            val remaining = (caloriesPerDay - consumedCalories)
+            val remaining = (goalCalories - consumedCalories)
             if (remaining >= 0)
                 Text(
                     text = "Remaining: $remaining kcal",
@@ -189,35 +197,61 @@ private fun CaloriesProgress(
     }
 }
 
+private val previewDiaryInfoUiState = DiaryInfoUiState.DiaryInfo(
+    emptyList(),
+    emptyList(),
+    goalCaloriesPerDay = 0,
+    caloriesEatenTotal = 0,
+)
+
 @Preview(showBackground = true)
 @Composable
-internal fun CaloriesCard1Preview() {
+internal fun NotOver() {
     NutritionTrackerTheme {
         CaloriesCard(
-            caloriesPerDay = 2500,
-            consumedCalories = 1850
+            diaryInfoUiState = previewDiaryInfoUiState.copy(
+                goalCaloriesPerDay = 2500,
+                caloriesEatenTotal = 1850,
+            ),
         )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-internal fun CaloriesCard2Preview() {
+internal fun Exactly() {
     NutritionTrackerTheme {
         CaloriesCard(
-            caloriesPerDay = 2500,
-            consumedCalories = 2500
+            previewDiaryInfoUiState.copy(
+                goalCaloriesPerDay = 2000,
+                caloriesEatenTotal = 2000,
+            )
         )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-internal fun CaloriesCard3Preview() {
+internal fun Over() {
     NutritionTrackerTheme {
         CaloriesCard(
-            caloriesPerDay = 2500,
-            consumedCalories = 2800
+            previewDiaryInfoUiState.copy(
+                goalCaloriesPerDay = 2500,
+                caloriesEatenTotal = 2800,
+            )
+        )
+    }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+internal fun Error() {
+    NutritionTrackerTheme {
+        CaloriesCard(
+            DiaryInfoUiState.Error(
+                "Error message",
+            )
         )
     }
 }
@@ -226,7 +260,9 @@ internal fun CaloriesCard3Preview() {
 @Composable
 internal fun CaloriesCardLoadingPreview() {
     NutritionTrackerTheme {
-        CaloriesCard()
+        CaloriesCard(
+            DiaryInfoUiState.Loading,
+        )
     }
 }
 
