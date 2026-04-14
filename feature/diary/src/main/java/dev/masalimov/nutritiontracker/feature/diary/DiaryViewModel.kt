@@ -20,9 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -88,43 +86,22 @@ class DiaryViewModel @Inject constructor(
 
     val diaryInfoUiState: StateFlow<DiaryInfoUiState> = _selectedDate
         .flatMapLatest { date ->
-            logD("diaryInfoUiState flatMapLatest: $date")
-            flow {
-                emit(DiaryInfoUiState.Loading)
-                emitAll(
-                    getDiaryStreamForDateUseCase(date)
-                        .map { diaryInfoForDate ->
-                            DiaryInfoUiState.DiaryInfo(
-                                eatenFoodList = diaryInfoForDate.diaryEntryForDate?.eatenFood?.map { it.toEatenFoodUiModel() }
-                                    ?: emptyList(),
-                                suggestedFoodList = diaryInfoForDate.suggestedFood.map(Food::toSuggestedFoodUiModel),
-                                caloriesEatenTotal = diaryInfoForDate.diaryEntryForDate?.caloriesEaten
-                                    ?: 0,
-                                goalCaloriesPerDay = diaryInfoForDate.diaryEntryForDate?.goalCaloriesPerDay
-                                    ?: goalCalories.caloriesPerDay,
-                            )
-                        }
-                        .catch { e ->
-                            emit(
-                                DiaryInfoUiState.Error(
-                                    e.message ?: "Failed to load diary information"
-                                )
-                            )
-                        }
-                        .flowOn(appDispatcher.defaultDispatcher)
-                )
-            }
-                .onEach {
-                    logD("diaryInfoUiState flatMapLatest flow on each: $it")
+            getDiaryStreamForDateUseCase(date)
+                .map { diaryInfoForDate ->
+                    DiaryInfoUiState.DiaryInfo(
+                        eatenFoodList = diaryInfoForDate.diaryEntryForDate?.eatenFood?.map { it.toEatenFoodUiModel() }
+                            ?: emptyList(),
+                        suggestedFoodList = diaryInfoForDate.suggestedFood.map(Food::toSuggestedFoodUiModel),
+                        caloriesEatenTotal = diaryInfoForDate.diaryEntryForDate?.caloriesEaten
+                            ?: 0,
+                        goalCaloriesPerDay = diaryInfoForDate.diaryEntryForDate?.goalCaloriesPerDay
+                            ?: goalCalories.caloriesPerDay,
+                    ) as DiaryInfoUiState
                 }
-        }
-        .onStart {
-            logD("diaryInfoUiState onStart")
-        }
-        .onEach {
-            logD("diaryInfoUiState on each: $it")
-        }
-        .stateIn(
+                .flowOn(appDispatcher.defaultDispatcher)
+                .onStart { emit(DiaryInfoUiState.Loading) }
+                .catch { e -> emit(DiaryInfoUiState.Error("Error has occurred: ${e.message}")) }
+        }.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             DiaryInfoUiState.Loading
@@ -182,7 +159,16 @@ sealed interface DiaryInfoUiState {
         val suggestedFoodList: List<SuggestedFoodUiModel>,
         val caloriesEatenTotal: Int,
         val goalCaloriesPerDay: Int,
-    ) : DiaryInfoUiState
+    ) : DiaryInfoUiState {
+        companion object {
+            val Empty = DiaryInfo(
+                eatenFoodList = emptyList(),
+                suggestedFoodList = emptyList(),
+                caloriesEatenTotal = 0,
+                goalCaloriesPerDay = 0,
+            )
+        }
+    }
 
     data class Error(val errorMessage: String) : DiaryInfoUiState
 }

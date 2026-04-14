@@ -72,7 +72,7 @@ fun DiaryScreen(
     if (diaryInfoUiState is DiaryInfoUiState.Error) {
         LaunchedEffect(Unit) {
             Toast.makeText(
-                context, "Failed to load diary info", Toast.LENGTH_LONG
+                context, (diaryInfoUiState as DiaryInfoUiState.Error).errorMessage, Toast.LENGTH_LONG
             ).show()
         }
     }

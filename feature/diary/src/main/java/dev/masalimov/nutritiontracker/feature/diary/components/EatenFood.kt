@@ -38,7 +38,7 @@ internal fun EatenFood(
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-        if (diaryInfoUiState is DiaryInfoUiState.Loading) {
+        if (diaryInfoUiState is DiaryInfoUiState.Loading || diaryInfoUiState is DiaryInfoUiState.Error) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {

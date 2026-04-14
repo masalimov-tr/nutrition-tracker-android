@@ -1,6 +1,7 @@
 package dev.masalimov.nutritiontracker.domain.diary.model
 
 import dev.masalimov.nutritiontracker.domain.food.Food
+import dev.masalimov.nutritiontracker.domain.food.exampleFood
 
 
 @JvmInline
@@ -13,6 +14,11 @@ data class EatenFood(
     val calories: Int
         get() = (quantityGram / 100 * food.caloriesPer100g).toInt()
 }
+
+val exampleEatenFood = EatenFood(
+    quantityGram = 150.0,
+    food = exampleFood
+)
 
 data class DiaryEntryForDate(
     val id: DiaryId,

@@ -32,7 +32,7 @@ internal fun SuggestedFood(
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(bottom = 12.dp)
         )
-        if (diaryInfoUiState is DiaryInfoUiState.Loading) {
+        if (diaryInfoUiState is DiaryInfoUiState.Loading || diaryInfoUiState is DiaryInfoUiState.Error) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.fillMaxWidth()

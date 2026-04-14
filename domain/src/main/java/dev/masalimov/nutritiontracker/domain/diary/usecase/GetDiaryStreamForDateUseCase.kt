@@ -43,6 +43,7 @@ class GetDiaryStreamForDateUseCase @Inject constructor(
 
                 val suggestedFood =
                     foodRepository.getSuggestedFood(diary.eatenFood.map { it.food })
+
                 emit(
                     CompleteDiaryInformationForDate(
                         diary,
