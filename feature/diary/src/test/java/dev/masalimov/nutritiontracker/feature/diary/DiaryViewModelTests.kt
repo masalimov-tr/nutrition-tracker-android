@@ -14,7 +14,6 @@ import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
-import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -87,10 +86,10 @@ class DiaryViewModelTests {
         initViewModel()
         viewModel.caloriesConsumptionStatusFlow.test {
             val first = awaitItem()
-            assertTrue(first.isEmpty())
+            assertThat(first).isEmpty()
 
             val second = awaitItem()
-            assertTrue(second == expectedMap)
+            assertThat(second).isEqualTo(expectedMap)
         }
     }
 
