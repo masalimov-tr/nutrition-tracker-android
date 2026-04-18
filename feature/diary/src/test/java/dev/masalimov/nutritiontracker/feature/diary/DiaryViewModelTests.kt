@@ -17,6 +17,8 @@ import dev.masalimov.nutritiontracker.domain.diary.usecase.GetDiaryStreamForDate
 import dev.masalimov.nutritiontracker.domain.food.FoodId
 import dev.masalimov.nutritiontracker.domain.food.exampleFood
 import io.mockk.MockKAnnotations
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
@@ -231,6 +233,40 @@ class DiaryViewModelTests {
             errorState as DiaryInfoUiState.Error
             // Shouldn't expose inner exception message to the user
             assertThat(errorState.errorMessage).isNotEqualTo("Test exception")
+        }
+    }
+
+    @Test
+    fun addFoodToDiary_emitsLoading_thenSuccess() = runTest {
+        val foodIdToAdd = 1L
+        val quantityGrams = 100.0
+        val expectedDate = DiaryDate.today().plusDays(3)
+        viewModel.onSelectDate(expectedDate)
+        viewModel.addFoodToDiary(foodIdToAdd, quantityGrams)
+        viewModel.addFoodUiState.test {
+            val initialState = awaitItem()
+            assertThat(initialState).isInstanceOf(AddFoodUiState.Idle::class.java)
+
+            val initialLoadingState = awaitItem()
+            assertThat(initialLoadingState).isInstanceOf(AddFoodUiState.Loading::class.java)
+
+            val successState = awaitItem()
+            assertThat(successState).isInstanceOf(AddFoodUiState.Success::class.java)
+            coVerify { addFoodToDiaryUseCase.invoke(foodIdToAdd, expectedDate, quantityGrams) }
+        }
+    }
+
+    @Test
+    fun addFoodToDiary_emitsError() = runTest {
+        val foodIdToAdd = 1L
+        val quantityGrams = 100.0
+        coEvery { addFoodToDiaryUseCase.invoke(any(), any(), any()) } throws RuntimeException("Test exception")
+        viewModel.addFoodToDiary(foodIdToAdd, quantityGrams)
+        viewModel.addFoodUiState.test {
+            val initialState = awaitItem()
+            val loadingState = awaitItem()
+            val errorState = awaitItem()
+            assertThat(errorState).isInstanceOf(AddFoodUiState.Error::class.java)
         }
     }
 }
