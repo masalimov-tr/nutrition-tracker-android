@@ -2,7 +2,7 @@ package dev.masalimov.nutritiontracker.domain.diary.model
 
 import javax.inject.Inject
 
-private const val DAYS_RANGE_FROM_TODAY = 1
+private const val DAYS_RANGE_FROM_TODAY = 5
 
 class DiaryDateCalendar @Inject constructor(
 ) {
