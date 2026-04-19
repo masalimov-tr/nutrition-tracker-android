@@ -28,7 +28,27 @@ interface DiaryDao {
     @Query("DELETE FROM DiaryEntity WHERE uid = :entryId")
     suspend fun deleteDiary(entryId: Long)
 
+    // Wrap add operation into a single DB transaction
     @Transaction
-    @Query("SELECT * FROM DiaryEntity")
-    fun getAllDiaryEntriesFlow(): Flow<List<DiaryEntryWithFoods>>
+    suspend fun addFoodToDiaryTx(
+        epochDay: Int,
+        goalCaloriesPerDay: Int,
+        foodId: Long,
+        quantityGrams: Double,
+    ) {
+        val existing = getDiaryForDate(epochDay)
+        val diaryEntryId = existing?.diaryEntry?.uid ?: insert(
+            DiaryEntity(
+                dateEpochDay = epochDay,
+                goalCaloriesPerDay = goalCaloriesPerDay,
+            )
+        )
+        insertCrossRef(
+            DiaryEntryFoodCrossRef(
+                diaryEntryId = diaryEntryId,
+                foodId = foodId,
+                quantityGrams = quantityGrams,
+            )
+        )
+    }
 }
