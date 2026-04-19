@@ -122,30 +122,11 @@ class AppDiaryRepositoryTest {
         }
 
         override suspend fun insert(diaryEntity: DiaryEntity): Long {
-            val assigned = DiaryEntryWithFoods(
-                DiaryEntity(
-                    uid = nextId++,
-                    dateEpochDay = diaryEntity.dateEpochDay,
-                    goalCaloriesPerDay = diaryEntity.goalCaloriesPerDay
-                ), emptyList()
-            )
-            insertedDiaryEntities.value += assigned
-            return assigned.diaryEntry.uid
+            throw UnsupportedOperationException("Not used by repository in tests; use addFoodToDiaryTx")
         }
 
         override suspend fun insertCrossRef(crossRef: DiaryEntryFoodCrossRef) {
-            insertedCrossRefs.value += crossRef
-            insertedDiaryEntities.value = insertedDiaryEntities.value.map {
-                if (it.diaryEntry.uid == crossRef.diaryEntryId)
-                    it.copy(
-                        items = it.items + DiaryFoodLink(
-                            link = crossRef,
-                            food = exampleFoodEntity
-                        )
-                    )
-                else
-                    it
-            }
+            throw UnsupportedOperationException("Not used by repository in tests; use addFoodToDiaryTx")
         }
 
         override suspend fun addFoodToDiaryTx(
@@ -206,7 +187,7 @@ class AppDiaryRepositoryTest {
         }
 
         override suspend fun deleteDiary(entryId: Long) {
-            // No op
+            throw UnsupportedOperationException("Not used by repository in tests; use addFoodToDiaryTx")
         }
         
     }
