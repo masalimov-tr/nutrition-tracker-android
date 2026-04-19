@@ -58,15 +58,15 @@ fun DiaryScreen(
 
     logD("UI: calendarUiState: $calendarUiState")
     logD("UI: diaryInfoUiState: $diaryInfoUiState")
-//    when (calendarUiState) {
-//        is CalendarUiState.Calendar -> logD("Calendar loaded: ${(calendarUiState as CalendarUiState.Calendar).uiModels.size}")
-//        CalendarUiState.Loading -> logD("Calendar loading")
-//    }
-//    when (diaryInfoUiState) {
-//        is DiaryInfoUiState.DiaryInfo -> logD("Diary info loaded: ${(diaryInfoUiState as DiaryInfoUiState.DiaryInfo).eatenFoodList.size}")
-//        DiaryInfoUiState.Loading -> logD("Diary info loading")
-//        is DiaryInfoUiState.Error -> logD("Diary info error")
-//    }
+    when (calendarUiState) {
+        is CalendarUiState.Calendar -> logD("Calendar loaded: ${(calendarUiState as CalendarUiState.Calendar).uiModels.size}")
+        CalendarUiState.Loading -> logD("Calendar loading")
+    }
+    when (diaryInfoUiState) {
+        is DiaryInfoUiState.DiaryInfo -> logD("Diary info loaded: ${(diaryInfoUiState as DiaryInfoUiState.DiaryInfo).eatenFoodList.size}")
+        DiaryInfoUiState.Loading -> logD("Diary info loading")
+        is DiaryInfoUiState.Error -> logD("Diary info error")
+    }
     logD("-----")
 
     if (diaryInfoUiState is DiaryInfoUiState.Error) {
