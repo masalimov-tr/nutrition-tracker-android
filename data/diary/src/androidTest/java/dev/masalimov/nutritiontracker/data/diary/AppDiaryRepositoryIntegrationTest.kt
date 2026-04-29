@@ -123,6 +123,23 @@ class AppDiaryRepositoryIntegrationTest {
         }
     }
 
+    @Test
+    fun addFoodToDiary_reusesExistingDiaryId_whenEntryAlreadyExists() = runTest {
+        val date = DiaryDate.of(4000)
+        val appleId = insertFood(name = "Apple", caloriesPer100g = 52.0)
+        val chickenId = insertFood(name = "Chicken", caloriesPer100g = 165.0)
+
+        repository.addFoodToDiary(foodId = appleId, date = date, quantityGrams = 100.0)
+        val afterAppleDb = db.diaryDao().getDiaryForDate(date.toEpochDay())!!
+        val firstId = afterAppleDb.diaryEntry.uid
+
+        repository.addFoodToDiary(foodId = chickenId, date = date, quantityGrams = 200.0)
+        val afterChickenDb = db.diaryDao().getDiaryForDate(date.toEpochDay())!!
+
+        assertThat(afterChickenDb.diaryEntry.uid).isEqualTo(firstId)
+        assertThat(afterChickenDb.items).hasSize(2)
+    }
+
     private suspend fun insertFood(name: String, caloriesPer100g: Double = 100.0): Long {
         return db.foodDao().insert(
             FoodEntity(
