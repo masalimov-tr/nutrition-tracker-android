@@ -4,9 +4,9 @@ import androidx.room.Embedded
 import androidx.room.Relation
 import dev.masalimov.nutritiontracker.core.database.food.FoodEntity
 
-// Link + Food pair for one item in a diary entry
-data class DiaryFoodLink(
-    @Embedded val link: DiaryEntryFoodCrossRef, // contains quantityGrams
+// A food item with its quantity as it appears in a diary entry
+data class DiaryFoodPortion(
+    @Embedded val link: DiaryFoodPortionCrossRef,
     @Relation(
         parentColumn = "foodId",
         entityColumn = "uid"
@@ -14,13 +14,13 @@ data class DiaryFoodLink(
     val food: FoodEntity
 )
 
-// Wrapper for an entry containing multiple link+food items
-data class DiaryEntryWithFoods(
+// A complete diary day: the diary slot + all food portions logged for it
+data class DiaryWithFoodPortions(
     @Embedded val diaryEntry: DiaryEntity,
     @Relation(
         parentColumn = "uid",
-        entity = DiaryEntryFoodCrossRef::class,
+        entity = DiaryFoodPortionCrossRef::class,
         entityColumn = "diaryEntryId"
     )
-    val items: List<DiaryFoodLink>
+    val items: List<DiaryFoodPortion>
 )

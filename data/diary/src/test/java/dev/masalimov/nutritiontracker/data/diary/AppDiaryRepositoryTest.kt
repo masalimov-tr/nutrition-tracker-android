@@ -5,9 +5,9 @@ package dev.masalimov.nutritiontracker.data.diary
 import com.google.common.truth.Truth.assertThat
 import dev.masalimov.nutritiontracker.core.database.diary.DiaryDao
 import dev.masalimov.nutritiontracker.core.database.diary.DiaryEntity
-import dev.masalimov.nutritiontracker.core.database.diary.DiaryEntryFoodCrossRef
-import dev.masalimov.nutritiontracker.core.database.diary.DiaryEntryWithFoods
-import dev.masalimov.nutritiontracker.core.database.diary.DiaryFoodLink
+import dev.masalimov.nutritiontracker.core.database.diary.DiaryFoodPortion
+import dev.masalimov.nutritiontracker.core.database.diary.DiaryFoodPortionCrossRef
+import dev.masalimov.nutritiontracker.core.database.diary.DiaryWithFoodPortions
 import dev.masalimov.nutritiontracker.core.database.food.exampleFoodEntity
 import dev.masalimov.nutritiontracker.domain.GoalCalories
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
@@ -109,13 +109,13 @@ class AppDiaryRepositoryTest {
     }
 
     private class FakeDiaryDao : DiaryDao {
-        val insertedDiaryEntities = MutableStateFlow<List<DiaryEntryWithFoods>>(emptyList())
-        val insertedCrossRefs = MutableStateFlow<List<DiaryEntryFoodCrossRef>>(emptyList())
+        val insertedDiaryEntities = MutableStateFlow<List<DiaryWithFoodPortions>>(emptyList())
+        val insertedCrossRefs = MutableStateFlow<List<DiaryFoodPortionCrossRef>>(emptyList())
 
         private var nextId: Long = 1L
 
         fun presetDiary(diary: DiaryEntity) {
-            insertedDiaryEntities.value += DiaryEntryWithFoods(
+            insertedDiaryEntities.value += DiaryWithFoodPortions(
                 diary,
                 emptyList()
             )
@@ -125,7 +125,7 @@ class AppDiaryRepositoryTest {
             throw UnsupportedOperationException("Not used by repository in tests; use addFoodToDiaryTx")
         }
 
-        override suspend fun insertCrossRef(crossRef: DiaryEntryFoodCrossRef) {
+        override suspend fun insertCrossRef(crossRef: DiaryFoodPortionCrossRef) {
             throw UnsupportedOperationException("Not used by repository in tests; use addFoodToDiaryTx")
         }
 
@@ -142,23 +142,23 @@ class AppDiaryRepositoryTest {
                     dateEpochDay = epochDay,
                     goalCaloriesPerDay = goalCaloriesPerDay,
                 )
-                val link = DiaryEntryFoodCrossRef(
+                val link = DiaryFoodPortionCrossRef(
                     diaryEntryId = newDiary.uid,
                     foodId = foodId,
                     quantityGrams = quantityGrams,
                 )
                 insertedCrossRefs.value += link
-                insertedDiaryEntities.value + DiaryEntryWithFoods(
+                insertedDiaryEntities.value + DiaryWithFoodPortions(
                     diaryEntry = newDiary,
                     items = listOf(
-                        DiaryFoodLink(
+                        DiaryFoodPortion(
                             link = link,
                             food = exampleFoodEntity,
                         )
                     )
                 )
             } else {
-                val link = DiaryEntryFoodCrossRef(
+                val link = DiaryFoodPortionCrossRef(
                     diaryEntryId = existing.diaryEntry.uid,
                     foodId = foodId,
                     quantityGrams = quantityGrams,
@@ -166,7 +166,7 @@ class AppDiaryRepositoryTest {
                 insertedCrossRefs.value += link
                 insertedDiaryEntities.value.map {
                     if (it.diaryEntry.uid == existing.diaryEntry.uid)
-                        it.copy(items = it.items + DiaryFoodLink(link = link, food = exampleFoodEntity))
+                        it.copy(items = it.items + DiaryFoodPortion(link = link, food = exampleFoodEntity))
                     else it
                 }
             }
@@ -174,12 +174,12 @@ class AppDiaryRepositoryTest {
             insertedDiaryEntities.value = newList
         }
 
-        override suspend fun getDiaryForDate(epochDay: Int): DiaryEntryWithFoods? {
+        override suspend fun getDiaryForDate(epochDay: Int): DiaryWithFoodPortions? {
             return insertedDiaryEntities.value
                 .firstOrNull { it.diaryEntry.dateEpochDay == epochDay }
         }
 
-        override fun getDiaryForDateFlow(epochDay: Int): Flow<DiaryEntryWithFoods?> {
+        override fun getDiaryForDateFlow(epochDay: Int): Flow<DiaryWithFoodPortions?> {
             return insertedDiaryEntities
                 .map { entities ->
                     entities.firstOrNull { it.diaryEntry.dateEpochDay == epochDay }

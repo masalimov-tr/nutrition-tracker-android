@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "789a9dd75ea56ec4e29c28b0c3a0a37d",
+    "identityHash": "451f39047dd2f4389011209106040ec8",
     "entities": [
       {
         "tableName": "FoodEntity",
@@ -93,7 +93,7 @@
         "foreignKeys": []
       },
       {
-        "tableName": "DiaryEntryFoodCrossRef",
+        "tableName": "DiaryFoodPortionCrossRef",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`diaryEntryId` INTEGER NOT NULL, `foodId` INTEGER NOT NULL, `quantityGrams` REAL NOT NULL, PRIMARY KEY(`diaryEntryId`, `foodId`), FOREIGN KEY(`diaryEntryId`) REFERENCES `DiaryEntity`(`uid`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`foodId`) REFERENCES `FoodEntity`(`uid`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
@@ -124,22 +124,22 @@
         },
         "indices": [
           {
-            "name": "index_DiaryEntryFoodCrossRef_diaryEntryId",
+            "name": "index_DiaryFoodPortionCrossRef_diaryEntryId",
             "unique": false,
             "columnNames": [
               "diaryEntryId"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_DiaryEntryFoodCrossRef_diaryEntryId` ON `${TABLE_NAME}` (`diaryEntryId`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_DiaryFoodPortionCrossRef_diaryEntryId` ON `${TABLE_NAME}` (`diaryEntryId`)"
           },
           {
-            "name": "index_DiaryEntryFoodCrossRef_foodId",
+            "name": "index_DiaryFoodPortionCrossRef_foodId",
             "unique": false,
             "columnNames": [
               "foodId"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_DiaryEntryFoodCrossRef_foodId` ON `${TABLE_NAME}` (`foodId`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_DiaryFoodPortionCrossRef_foodId` ON `${TABLE_NAME}` (`foodId`)"
           }
         ],
         "foreignKeys": [
@@ -171,7 +171,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '789a9dd75ea56ec4e29c28b0c3a0a37d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '451f39047dd2f4389011209106040ec8')"
     ]
   }
 }

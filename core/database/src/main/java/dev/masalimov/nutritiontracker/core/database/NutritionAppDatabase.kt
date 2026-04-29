@@ -4,7 +4,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import dev.masalimov.nutritiontracker.core.database.diary.DiaryDao
 import dev.masalimov.nutritiontracker.core.database.diary.DiaryEntity
-import dev.masalimov.nutritiontracker.core.database.diary.DiaryEntryFoodCrossRef
+import dev.masalimov.nutritiontracker.core.database.diary.DiaryFoodPortionCrossRef
 import dev.masalimov.nutritiontracker.core.database.food.FoodDao
 import dev.masalimov.nutritiontracker.core.database.food.FoodEntity
 
@@ -12,7 +12,7 @@ import dev.masalimov.nutritiontracker.core.database.food.FoodEntity
     entities = [
         FoodEntity::class,
         DiaryEntity::class,
-        DiaryEntryFoodCrossRef::class,
+        DiaryFoodPortionCrossRef::class,
     ],
     version = 1,
     exportSchema = true

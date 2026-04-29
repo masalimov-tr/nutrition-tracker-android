@@ -15,15 +15,15 @@ interface DiaryDao {
     suspend fun insert(diaryEntity: DiaryEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertCrossRef(crossRef: DiaryEntryFoodCrossRef)
+    suspend fun insertCrossRef(crossRef: DiaryFoodPortionCrossRef)
 
     @Transaction
     @Query("SELECT * FROM DiaryEntity WHERE dateEpochDay = :epochDay LIMIT 1")
-    suspend fun getDiaryForDate(epochDay: Int): DiaryEntryWithFoods?
+    suspend fun getDiaryForDate(epochDay: Int): DiaryWithFoodPortions?
 
     @Transaction
     @Query("SELECT * FROM DiaryEntity WHERE dateEpochDay = :epochDay LIMIT 1")
-    fun getDiaryForDateFlow(epochDay: Int): Flow<DiaryEntryWithFoods?>
+    fun getDiaryForDateFlow(epochDay: Int): Flow<DiaryWithFoodPortions?>
 
     @Query("DELETE FROM DiaryEntity WHERE uid = :entryId")
     suspend fun deleteDiary(entryId: Long)
@@ -44,7 +44,7 @@ interface DiaryDao {
             )
         )
         insertCrossRef(
-            DiaryEntryFoodCrossRef(
+            DiaryFoodPortionCrossRef(
                 diaryEntryId = diaryEntryId,
                 foodId = foodId,
                 quantityGrams = quantityGrams,

@@ -2,9 +2,9 @@ package dev.masalimov.nutritiontracker.data.diary
 
 import com.google.common.truth.Truth.assertThat
 import dev.masalimov.nutritiontracker.core.database.diary.DiaryEntity
-import dev.masalimov.nutritiontracker.core.database.diary.DiaryEntryFoodCrossRef
-import dev.masalimov.nutritiontracker.core.database.diary.DiaryEntryWithFoods
-import dev.masalimov.nutritiontracker.core.database.diary.DiaryFoodLink
+import dev.masalimov.nutritiontracker.core.database.diary.DiaryFoodPortion
+import dev.masalimov.nutritiontracker.core.database.diary.DiaryFoodPortionCrossRef
+import dev.masalimov.nutritiontracker.core.database.diary.DiaryWithFoodPortions
 import dev.masalimov.nutritiontracker.core.database.food.FoodEntity
 import dev.masalimov.nutritiontracker.domain.diary.model.DiaryDate
 import org.junit.Test
@@ -32,8 +32,8 @@ class MapperTest {
     private fun diaryWithFoods(
         diaryUid: Long = 42L,
         goalCaloriesPerDay: Int = 2000,
-        items: List<DiaryFoodLink> = emptyList(),
-    ) = DiaryEntryWithFoods(
+        items: List<DiaryFoodPortion> = emptyList(),
+    ) = DiaryWithFoodPortions(
         diaryEntry = DiaryEntity(
             uid = diaryUid,
             dateEpochDay = date.toEpochDay(),
@@ -64,8 +64,8 @@ class MapperTest {
     @Test
     fun toDiary_mapsEatenFood_nameAndQuantity() {
         val food = foodEntity(uid = 5L, name = "Banana")
-        val link = DiaryFoodLink(
-            link = DiaryEntryFoodCrossRef(diaryEntryId = 42L, foodId = 5L, quantityGrams = 120.0),
+        val link = DiaryFoodPortion(
+            link = DiaryFoodPortionCrossRef(diaryEntryId = 42L, foodId = 5L, quantityGrams = 120.0),
             food = food,
         )
         val result = diaryWithFoods(items = listOf(link)).toDiary(date)
@@ -80,8 +80,8 @@ class MapperTest {
     fun toDiary_calculatesCalories_fromQuantityAndCaloriesPer100g() {
         // 150g of food with 52 cal/100g → 78 calories
         val food = foodEntity(caloriesPer100g = 52.0)
-        val link = DiaryFoodLink(
-            link = DiaryEntryFoodCrossRef(diaryEntryId = 42L, foodId = 1L, quantityGrams = 150.0),
+        val link = DiaryFoodPortion(
+            link = DiaryFoodPortionCrossRef(diaryEntryId = 42L, foodId = 1L, quantityGrams = 150.0),
             food = food,
         )
         val result = diaryWithFoods(items = listOf(link)).toDiary(date)
@@ -96,8 +96,8 @@ class MapperTest {
         val apple = foodEntity(uid = 1L, name = "Apple", caloriesPer100g = 52.0)
         val chicken = foodEntity(uid = 2L, name = "Chicken", caloriesPer100g = 165.0)
         val items = listOf(
-            DiaryFoodLink(DiaryEntryFoodCrossRef(42L, 1L, 100.0), apple),
-            DiaryFoodLink(DiaryEntryFoodCrossRef(42L, 2L, 200.0), chicken),
+            DiaryFoodPortion(DiaryFoodPortionCrossRef(42L, 1L, 100.0), apple),
+            DiaryFoodPortion(DiaryFoodPortionCrossRef(42L, 2L, 200.0), chicken),
         )
         val result = diaryWithFoods(items = items).toDiary(date)
 

@@ -23,13 +23,12 @@ import dev.masalimov.nutritiontracker.core.database.food.FoodEntity
     ],
     indices = [
         Index(value = ["diaryEntryId"]),
-        Index(value = ["foodId"]) // for joins
+        Index(value = ["foodId"])
     ],
 )
 
-data class DiaryEntryFoodCrossRef(
+data class DiaryFoodPortionCrossRef(
     val diaryEntryId: Long,
     val foodId: Long,
-
     val quantityGrams: Double,
 )

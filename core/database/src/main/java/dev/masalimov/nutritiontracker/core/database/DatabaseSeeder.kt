@@ -3,7 +3,7 @@ package dev.masalimov.nutritiontracker.core.database
 import androidx.room.withTransaction
 import dev.masalimov.nutritiontracker.core.database.diary.DiaryDao
 import dev.masalimov.nutritiontracker.core.database.diary.DiaryEntity
-import dev.masalimov.nutritiontracker.core.database.diary.DiaryEntryFoodCrossRef
+import dev.masalimov.nutritiontracker.core.database.diary.DiaryFoodPortionCrossRef
 import dev.masalimov.nutritiontracker.core.database.food.FoodDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -49,7 +49,7 @@ internal class DatabaseSeeder @Inject constructor(
                 val diaryId = diaryDao.insert(diary(yesterday, 2000))
                 for (i in 0..3) {
                     diaryDao.insertCrossRef(
-                        DiaryEntryFoodCrossRef(
+                        DiaryFoodPortionCrossRef(
                             diaryEntryId = diaryId,
                             foodId = insertedFoodIds[i],
                             quantityGrams = defaultQty,
@@ -63,7 +63,7 @@ internal class DatabaseSeeder @Inject constructor(
                 val diaryId = diaryDao.insert(diary(today, 1500))
                 for (i in 2..5) {
                     diaryDao.insertCrossRef(
-                        DiaryEntryFoodCrossRef(
+                        DiaryFoodPortionCrossRef(
                             diaryEntryId = diaryId,
                             foodId = insertedFoodIds[i],
                             quantityGrams = defaultQty,
@@ -77,7 +77,7 @@ internal class DatabaseSeeder @Inject constructor(
                 val diaryId = diaryDao.insert(diary(tomorrow, 1700))
                 for (i in 6..7) {
                     diaryDao.insertCrossRef(
-                        DiaryEntryFoodCrossRef(
+                        DiaryFoodPortionCrossRef(
                             diaryEntryId = diaryId,
                             foodId = insertedFoodIds[i],
                             quantityGrams = defaultQty,
