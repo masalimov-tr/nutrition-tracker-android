@@ -330,10 +330,6 @@ class DiaryUseCasesReactivityIntegrationTest {
             }.asStateFlow()
         }
 
-        override fun getAllDiaryEntriesFlow(): Flow<List<DiaryEntryForDate>> {
-            return MutableStateFlow(diaryMap.values.toList()).asStateFlow()
-        }
-
         override suspend fun addFoodToDiary(
             foodId: Long,
             date: DiaryDate,

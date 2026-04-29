@@ -18,7 +18,7 @@ import dev.masalimov.nutritiontracker.core.database.food.FoodEntity
     exportSchema = true
 )
 
-internal abstract class NutritionAppDatabase : RoomDatabase() {
+abstract class NutritionAppDatabase : RoomDatabase() {
 
     abstract fun foodDao(): FoodDao
 
