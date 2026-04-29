@@ -74,6 +74,10 @@ dependencies {
     testImplementation(libs.truth)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.truth)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
