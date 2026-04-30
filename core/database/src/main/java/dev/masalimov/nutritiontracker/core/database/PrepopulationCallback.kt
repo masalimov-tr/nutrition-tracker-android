@@ -10,9 +10,9 @@ import javax.inject.Provider
 import javax.inject.Singleton
 
 @Singleton
-internal class PrepopulateCallback @Inject constructor(
+class PrepopulateCallback @Inject constructor(
     @ApplicationScope private val appScope: CoroutineScope,
-    private val seederProvider: Provider<DatabaseSeeder>,
+    val seederProvider: Provider<DatabaseSeeder>,
 ) : RoomDatabase.Callback() {
     override fun onCreate(db: SupportSQLiteDatabase) {
         super.onCreate(db)

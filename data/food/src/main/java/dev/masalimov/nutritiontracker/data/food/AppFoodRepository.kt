@@ -31,7 +31,7 @@ internal class AppFoodRepository @Inject constructor(
     override suspend fun getSuggestedFood(eatenFood: List<Food>): List<Food> {
         val allFoods = foodDao.getAll()
         if (allFoods.isEmpty()) return emptyList()
-        return allFoods.take(5).map(FoodEntity::toFood)
+        return allFoods.take(0).map(FoodEntity::toFood)
     }
 
     override suspend fun searchFood(query: String): List<Food> {

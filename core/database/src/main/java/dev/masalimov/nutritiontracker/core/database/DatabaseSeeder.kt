@@ -19,7 +19,7 @@ import javax.inject.Singleton
 
 
 @Singleton
-internal class DatabaseSeeder @Inject constructor(
+class DatabaseSeeder @Inject constructor(
     private val db: NutritionAppDatabase,
     private val foodDao: FoodDao,
     private val diaryDao: DiaryDao,
