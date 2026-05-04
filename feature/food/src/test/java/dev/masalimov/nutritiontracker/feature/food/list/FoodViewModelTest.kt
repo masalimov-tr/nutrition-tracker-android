@@ -39,6 +39,10 @@ class FoodViewModelTest {
     @Before
     fun setUp() {
         MockKAnnotations.init(this)
+        coEvery { getFoodByQueryUseCase.invoke("") } returns SavedAndSearchResults(
+            savedFood = emptyList(),
+            searchFood = emptyList(),
+        )
         viewModel = FoodViewModel(getFoodByQueryUseCase, foodRepository)
     }
 
@@ -86,14 +90,7 @@ class FoodViewModelTest {
 
         viewModel.uiState.test {
             awaitItem() // Initial from subscription
-            advanceUntilIdle() // let blank query settle first
-
             viewModel.onQueryChanged("ban")
-            // debounce is 300 ms — advance past it
-            mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(300L)
-
-            // consume whatever states appeared before we advanced time
-            // (Loading for blank, Success for blank, Loading for "ban")
             var last: FoodListUiState = awaitItem()
             while (last !is FoodListUiState.Success || last.searchedFood.isEmpty()) {
                 last = awaitItem()
@@ -112,10 +109,7 @@ class FoodViewModelTest {
 
         viewModel.uiState.test {
             awaitItem() // Initial
-            advanceUntilIdle()
-
             viewModel.onQueryChanged("xyz")
-            mainDispatcherRule.testDispatcher.scheduler.advanceTimeBy(300L)
 
             var last: FoodListUiState = awaitItem()
             while (last !is FoodListUiState.Success) {
