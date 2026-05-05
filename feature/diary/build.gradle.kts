@@ -39,7 +39,10 @@ android {
         jvmTarget = "17"
     }
     testOptions {
-        unitTests.isReturnDefaultValues = true
+        unitTests {
+            isReturnDefaultValues = true
+            isIncludeAndroidResources = true
+        }
     }
 }
 
@@ -72,6 +75,9 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.turbine)
     testImplementation(libs.truth)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.junit)
+    testImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

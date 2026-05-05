@@ -27,6 +27,7 @@ material3 = "1.4.0"
 mockk = "1.13.12"
 turbine = "1.1.0"
 truth = "1.4.4"
+robolectric = "4.13"
 
 [libraries]
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
@@ -67,6 +68,7 @@ androidx-room-testing = { group = "androidx.room", name = "room-testing", versio
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
