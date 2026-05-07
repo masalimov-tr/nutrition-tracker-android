@@ -1,10 +1,13 @@
 package dev.masalimov.nutritiontracker.feature.diary
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dev.masalimov.nutritiontracker.core.common.AppDispatchers
 import dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme
@@ -18,7 +21,12 @@ import dev.masalimov.nutritiontracker.domain.diary.usecase.GetDiaryStreamForDate
 import dev.masalimov.nutritiontracker.domain.food.Food
 import dev.masalimov.nutritiontracker.domain.food.FoodId
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -39,10 +47,13 @@ import org.robolectric.annotation.Config
  */
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [34])
+@OptIn(ExperimentalCoroutinesApi::class)
 class DiaryScreenComponentTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
+
+    private val testDispatcher = StandardTestDispatcher()
 
     private lateinit var foodRepo: InMemoryFoodRepository
     private lateinit var diaryRepo: InMemoryDiaryRepository
@@ -50,9 +61,15 @@ class DiaryScreenComponentTest {
 
     @Before
     fun setUp() {
+        Dispatchers.setMain(testDispatcher)
         foodRepo = InMemoryFoodRepository()
         diaryRepo = InMemoryDiaryRepository(foodRepo)
         viewModel = buildViewModel()
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
     }
 
     // ── Section titles — visible immediately in the loading state ─────────────
@@ -62,9 +79,10 @@ class DiaryScreenComponentTest {
         composeTestRule.setContent {
             NutritionTrackerTheme { DiaryScreen(viewModel = viewModel) }
         }
+        advanceScreen()
         composeTestRule.onNodeWithText("Daily calories").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Today's meals").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Suggested meals").assertIsDisplayed()
+        composeTestRule.assertTextDisplayedAfterScroll("Today's meals")
+        composeTestRule.assertTextDisplayedAfterScroll("Suggested meals")
     }
 
     // ── Calendar ──────────────────────────────────────────────────────────────
@@ -75,6 +93,7 @@ class DiaryScreenComponentTest {
         composeTestRule.setContent {
             NutritionTrackerTheme { DiaryScreen(viewModel = viewModel) }
         }
+        advanceScreen()
         composeTestRule.waitUntil(5_000) {
             composeTestRule.onAllNodesWithText(today.date.dayOfMonth.toString())
                 .fetchSemanticsNodes().isNotEmpty()
@@ -89,11 +108,8 @@ class DiaryScreenComponentTest {
         composeTestRule.setContent {
             NutritionTrackerTheme { DiaryScreen(viewModel = viewModel) }
         }
-        composeTestRule.waitUntil(5_000) {
-            composeTestRule.onAllNodesWithText("No meals added yet")
-                .fetchSemanticsNodes().isNotEmpty()
-        }
-        composeTestRule.onNodeWithText("No meals added yet").assertIsDisplayed()
+        advanceScreen()
+        composeTestRule.assertTextDisplayedAfterScroll("No meals added yet")
     }
 
     // ── Calories card ─────────────────────────────────────────────────────────
@@ -109,11 +125,10 @@ class DiaryScreenComponentTest {
         composeTestRule.setContent {
             NutritionTrackerTheme { DiaryScreen(viewModel = viewModel) }
         }
-        composeTestRule.waitUntil(5_000) {
-            composeTestRule.onAllNodesWithText("Pasta").fetchSemanticsNodes().isNotEmpty()
-        }
-        composeTestRule.onNodeWithText("200").assertIsDisplayed()
-        composeTestRule.onNodeWithText(" / 2000 kcal").assertIsDisplayed()
+        advanceScreen()
+        composeTestRule.assertTextDisplayedAfterScroll("Pasta")
+        composeTestRule.assertTextDisplayedAfterScroll("200")
+        composeTestRule.assertTextDisplayedAfterScroll(" / 2000 kcal")
     }
 
     @Test
@@ -126,10 +141,8 @@ class DiaryScreenComponentTest {
         composeTestRule.setContent {
             NutritionTrackerTheme { DiaryScreen(viewModel = viewModel) }
         }
-        composeTestRule.waitUntil(5_000) {
-            composeTestRule.onAllNodesWithText("Pasta").fetchSemanticsNodes().isNotEmpty()
-        }
-        composeTestRule.onNodeWithText("Remaining: 1800 kcal").assertIsDisplayed()
+        advanceScreen()
+        composeTestRule.assertTextDisplayedAfterScroll("Remaining: 1800 kcal")
     }
 
     @Test
@@ -142,10 +155,8 @@ class DiaryScreenComponentTest {
         composeTestRule.setContent {
             NutritionTrackerTheme { DiaryScreen(viewModel = viewModel) }
         }
-        composeTestRule.waitUntil(5_000) {
-            composeTestRule.onAllNodesWithText("Fat food").fetchSemanticsNodes().isNotEmpty()
-        }
-        composeTestRule.onNodeWithText("Over: 400 kcal").assertIsDisplayed()
+        advanceScreen()
+        composeTestRule.assertTextDisplayedAfterScroll("Over: 400 kcal")
     }
 
     // ── Eaten food section ────────────────────────────────────────────────────
@@ -160,13 +171,11 @@ class DiaryScreenComponentTest {
         composeTestRule.setContent {
             NutritionTrackerTheme { DiaryScreen(viewModel = viewModel) }
         }
-        composeTestRule.waitUntil(5_000) {
-            composeTestRule.onAllNodesWithText("Chicken breast").fetchSemanticsNodes().isNotEmpty()
-        }
-        composeTestRule.onNodeWithText("Chicken breast").assertIsDisplayed()
-        composeTestRule.onNodeWithText("160 kcal / 100g").assertIsDisplayed()
-        composeTestRule.onNodeWithText("150 g").assertIsDisplayed()
-        composeTestRule.onNodeWithText("240 kkal").assertIsDisplayed()
+        advanceScreen()
+        composeTestRule.assertTextDisplayedAfterScroll("Chicken breast")
+        composeTestRule.assertTextDisplayedAfterScroll("160 kcal / 100g")
+        composeTestRule.assertTextDisplayedAfterScroll("150 g")
+        composeTestRule.assertTextDisplayedAfterScroll("240 kkal")
     }
 
     @Test
@@ -183,11 +192,9 @@ class DiaryScreenComponentTest {
         composeTestRule.setContent {
             NutritionTrackerTheme { DiaryScreen(viewModel = viewModel) }
         }
-        composeTestRule.waitUntil(5_000) {
-            composeTestRule.onAllNodesWithText("Apple").fetchSemanticsNodes().isNotEmpty()
-        }
-        composeTestRule.onNodeWithText("Apple").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Greek yogurt").assertIsDisplayed()
+        advanceScreen()
+        composeTestRule.assertTextDisplayedAfterScroll("Apple")
+        composeTestRule.assertTextDisplayedAfterScroll("Greek yogurt")
     }
 
     // ── Date switching ────────────────────────────────────────────────────────
@@ -203,19 +210,29 @@ class DiaryScreenComponentTest {
         composeTestRule.setContent {
             NutritionTrackerTheme { DiaryScreen(viewModel = viewModel) }
         }
-        composeTestRule.waitUntil(5_000) {
-            composeTestRule.onAllNodesWithText("Apple").fetchSemanticsNodes().isNotEmpty()
-        }
-        composeTestRule.onNodeWithText("Apple").assertIsDisplayed()
+        advanceScreen()
+        composeTestRule.assertTextDisplayedAfterScroll("Apple")
 
+        composeTestRule.onNodeWithTag(DIARY_CONTENT_LIST_TEST_TAG)
+            .performScrollToNode(hasText(tomorrow.date.dayOfMonth.toString()))
         composeTestRule.onNodeWithText(tomorrow.date.dayOfMonth.toString()).performClick()
+        advanceScreen()
 
-        composeTestRule.waitUntil(5_000) {
-            composeTestRule.onAllNodesWithText("No meals added yet")
-                .fetchSemanticsNodes().isNotEmpty()
-        }
-        composeTestRule.onNodeWithText("No meals added yet").assertIsDisplayed()
+        composeTestRule.assertTextDisplayedAfterScroll("No meals added yet")
         composeTestRule.onNodeWithText("Apple").assertDoesNotExist()
+    }
+
+    private fun advanceScreen() {
+        testDispatcher.scheduler.advanceUntilIdle()
+        composeTestRule.waitForIdle()
+    }
+
+    private fun androidx.compose.ui.test.junit4.ComposeContentTestRule.assertTextDisplayedAfterScroll(
+        text: String,
+    ) {
+        onNodeWithTag(DIARY_CONTENT_LIST_TEST_TAG)
+            .performScrollToNode(hasText(text))
+        onNodeWithText(text).assertIsDisplayed()
     }
 
     private fun buildViewModel() = DiaryViewModel(
@@ -234,9 +251,9 @@ class DiaryScreenComponentTest {
         goalCalories = GoalCalories(),
         diaryDateCalendar = DiaryDateCalendar(),
         appDispatcher = object : AppDispatchers {
-            override val ioDispatcher = Dispatchers.IO
-            override val mainDispatcher = Dispatchers.Main
-            override val defaultDispatcher = Dispatchers.Default
+            override val ioDispatcher = testDispatcher
+            override val mainDispatcher = testDispatcher
+            override val defaultDispatcher = testDispatcher
         },
     )
 }

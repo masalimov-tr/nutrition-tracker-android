@@ -26,6 +26,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -126,6 +127,7 @@ private fun DiaryContent(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
+                    .testTag(DIARY_CONTENT_LIST_TEST_TAG)
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
@@ -206,6 +208,8 @@ private fun AddFoodLoading() {
         }
     }
 }
+
+internal const val DIARY_CONTENT_LIST_TEST_TAG = "DiaryContentList"
 
 private val diaryInfoUiStatePreview = DiaryInfoUiState.DiaryInfo(
     eatenFoodList = listOf(
@@ -299,4 +303,3 @@ private fun ReadyCalendar_ReadyInfo_AddFood() {
         )
     }
 }
-
