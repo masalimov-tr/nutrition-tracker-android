@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -27,6 +28,7 @@ import dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme
 import dev.masalimov.nutritiontracker.core.ui.components.ShimmerBar
 import dev.masalimov.nutritiontracker.core.ui.components.ShimmerCircle
 import dev.masalimov.nutritiontracker.feature.diary.DiaryInfoUiState
+import dev.masalimov.nutritiontracker.feature.diary.DiaryTestTags
 
 @Composable
 internal fun CaloriesCard(
@@ -35,6 +37,7 @@ internal fun CaloriesCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .testTag(DiaryTestTags.CaloriesCard)
             .border(
                 1.dp,
                 MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
@@ -115,14 +118,18 @@ private fun CaloriesCardContent(
                 verticalAlignment = Alignment.Bottom,
             ) {
                 Text(
-                    modifier = Modifier.alignByBaseline(),
+                    modifier = Modifier
+                        .alignByBaseline()
+                        .testTag(DiaryTestTags.CaloriesConsumed),
                     text = "$consumedCalories",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
                 Text(
-                    modifier = Modifier.alignByBaseline(),
+                    modifier = Modifier
+                        .alignByBaseline()
+                        .testTag(DiaryTestTags.CaloriesGoal),
                     text = " / $goalCalories kcal",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Normal,
@@ -132,12 +139,14 @@ private fun CaloriesCardContent(
             val remaining = (goalCalories - consumedCalories)
             if (remaining >= 0)
                 Text(
+                    modifier = Modifier.testTag(DiaryTestTags.CaloriesBalance),
                     text = "Remaining: $remaining kcal",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 )
             else
                 Text(
+                    modifier = Modifier.testTag(DiaryTestTags.CaloriesBalance),
                     text = "Over: ${-remaining} kcal",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.error.copy(alpha = 0.6f),
@@ -285,4 +294,3 @@ internal fun CaloriesProgressPreview() {
         )
     }
 }
-

@@ -127,7 +127,7 @@ private fun DiaryContent(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .testTag(DIARY_CONTENT_LIST_TEST_TAG)
+                    .testTag(DiaryTestTags.ContentList)
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
@@ -208,8 +208,6 @@ private fun AddFoodLoading() {
         }
     }
 }
-
-internal const val DIARY_CONTENT_LIST_TEST_TAG = "DiaryContentList"
 
 private val diaryInfoUiStatePreview = DiaryInfoUiState.DiaryInfo(
     eatenFoodList = listOf(

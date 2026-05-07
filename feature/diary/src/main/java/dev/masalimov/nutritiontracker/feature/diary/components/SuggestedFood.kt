@@ -14,18 +14,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.masalimov.nutritiontracker.core.ui.NutritionTrackerTheme
 import dev.masalimov.nutritiontracker.core.ui.components.PillChip
 import dev.masalimov.nutritiontracker.feature.diary.DiaryInfoUiState
+import dev.masalimov.nutritiontracker.feature.diary.DiaryTestTags
 import dev.masalimov.nutritiontracker.feature.diary.SuggestedFoodUiModel
 
 @Composable
 internal fun SuggestedFood(
     diaryInfoUiState: DiaryInfoUiState,
 ) {
-    Column {
+    Column(
+        modifier = Modifier.testTag(DiaryTestTags.SuggestedFoodSection)
+    ) {
         Text(
             text = "Suggested meals",
             style = MaterialTheme.typography.titleMedium,

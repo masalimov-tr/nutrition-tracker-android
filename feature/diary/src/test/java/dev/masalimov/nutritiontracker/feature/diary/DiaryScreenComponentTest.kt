@@ -1,6 +1,9 @@
 package dev.masalimov.nutritiontracker.feature.diary
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -80,9 +83,9 @@ class DiaryScreenComponentTest {
             NutritionTrackerTheme { DiaryScreen(viewModel = viewModel) }
         }
         advanceScreen()
-        composeTestRule.onNodeWithText("Daily calories").assertIsDisplayed()
-        composeTestRule.assertTextDisplayedAfterScroll("Today's meals")
-        composeTestRule.assertTextDisplayedAfterScroll("Suggested meals")
+        composeTestRule.onNodeWithTag(DiaryTestTags.CaloriesCard).assertIsDisplayed()
+        composeTestRule.assertTagDisplayedAfterScroll(DiaryTestTags.EatenFoodSection)
+        composeTestRule.assertTagDisplayedAfterScroll(DiaryTestTags.SuggestedFoodSection)
     }
 
     // ── Calendar ──────────────────────────────────────────────────────────────
@@ -109,7 +112,7 @@ class DiaryScreenComponentTest {
             NutritionTrackerTheme { DiaryScreen(viewModel = viewModel) }
         }
         advanceScreen()
-        composeTestRule.assertTextDisplayedAfterScroll("No meals added yet")
+        composeTestRule.assertTagDisplayedAfterScroll(DiaryTestTags.EmptyMeals)
     }
 
     // ── Calories card ─────────────────────────────────────────────────────────
@@ -127,8 +130,8 @@ class DiaryScreenComponentTest {
         }
         advanceScreen()
         composeTestRule.assertTextDisplayedAfterScroll("Pasta")
-        composeTestRule.assertTextDisplayedAfterScroll("200")
-        composeTestRule.assertTextDisplayedAfterScroll(" / 2000 kcal")
+        composeTestRule.assertTaggedTextEqualsAfterScroll(DiaryTestTags.CaloriesConsumed, "200")
+        composeTestRule.assertTaggedTextContainsAfterScroll(DiaryTestTags.CaloriesGoal, "2000")
     }
 
     @Test
@@ -142,7 +145,7 @@ class DiaryScreenComponentTest {
             NutritionTrackerTheme { DiaryScreen(viewModel = viewModel) }
         }
         advanceScreen()
-        composeTestRule.assertTextDisplayedAfterScroll("Remaining: 1800 kcal")
+        composeTestRule.assertTaggedTextContainsAfterScroll(DiaryTestTags.CaloriesBalance, "1800")
     }
 
     @Test
@@ -156,7 +159,7 @@ class DiaryScreenComponentTest {
             NutritionTrackerTheme { DiaryScreen(viewModel = viewModel) }
         }
         advanceScreen()
-        composeTestRule.assertTextDisplayedAfterScroll("Over: 400 kcal")
+        composeTestRule.assertTaggedTextContainsAfterScroll(DiaryTestTags.CaloriesBalance, "400")
     }
 
     // ── Eaten food section ────────────────────────────────────────────────────
@@ -213,12 +216,12 @@ class DiaryScreenComponentTest {
         advanceScreen()
         composeTestRule.assertTextDisplayedAfterScroll("Apple")
 
-        composeTestRule.onNodeWithTag(DIARY_CONTENT_LIST_TEST_TAG)
+        composeTestRule.onNodeWithTag(DiaryTestTags.ContentList)
             .performScrollToNode(hasText(tomorrow.date.dayOfMonth.toString()))
         composeTestRule.onNodeWithText(tomorrow.date.dayOfMonth.toString()).performClick()
         advanceScreen()
 
-        composeTestRule.assertTextDisplayedAfterScroll("No meals added yet")
+        composeTestRule.assertTagDisplayedAfterScroll(DiaryTestTags.EmptyMeals)
         composeTestRule.onNodeWithText("Apple").assertDoesNotExist()
     }
 
@@ -230,9 +233,33 @@ class DiaryScreenComponentTest {
     private fun androidx.compose.ui.test.junit4.ComposeContentTestRule.assertTextDisplayedAfterScroll(
         text: String,
     ) {
-        onNodeWithTag(DIARY_CONTENT_LIST_TEST_TAG)
+        onNodeWithTag(DiaryTestTags.ContentList)
             .performScrollToNode(hasText(text))
         onNodeWithText(text).assertIsDisplayed()
+    }
+
+    private fun androidx.compose.ui.test.junit4.ComposeContentTestRule.assertTagDisplayedAfterScroll(
+        tag: String,
+    ) {
+        onNodeWithTag(DiaryTestTags.ContentList)
+            .performScrollToNode(hasTestTag(tag))
+        onNodeWithTag(tag).assertIsDisplayed()
+    }
+
+    private fun androidx.compose.ui.test.junit4.ComposeContentTestRule.assertTaggedTextEqualsAfterScroll(
+        tag: String,
+        text: String,
+    ) {
+        assertTagDisplayedAfterScroll(tag)
+        onNodeWithTag(tag).assertTextEquals(text)
+    }
+
+    private fun androidx.compose.ui.test.junit4.ComposeContentTestRule.assertTaggedTextContainsAfterScroll(
+        tag: String,
+        text: String,
+    ) {
+        assertTagDisplayedAfterScroll(tag)
+        onNodeWithTag(tag).assertTextContains(text, substring = true)
     }
 
     private fun buildViewModel() = DiaryViewModel(
